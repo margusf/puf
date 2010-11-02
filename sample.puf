@@ -1,1 +1,2 @@
-program foo
+foo = bar;
+foo bar baz = kaka;
