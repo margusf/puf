@@ -4,9 +4,12 @@ Program: Include* Rdecl+;
 
 Include: "#" "include" file=Str; 
 
+option Decl: Rdecl | Tdecl;
 Rdecl: Flhs "=" Expr ";";
+Tdecl: Tlhs "=" Expr ";";
 
 Flhs: Id+;
+Tlhs: "(" f=Id ("," r=Id)* ")";
 
 option Expr: 
 	CaseExpr 
@@ -19,8 +22,8 @@ option Expr:
 	| Id; // TODO: arithmetics.
 
 CaseExpr: "case";
-LetrecExpr: "letrec";
-LetExpr: "let";
+LetrecExpr: "letrec" Rdecl+ "in" Expr;
+LetExpr: "let" Decl+ "in" Expr;
 FunExpr: "fn" params=Id+ "->" Expr;
 IfExpr: "if" cond=Expr "then" ifThen=Expr "else" ifElse=Expr;
 ListLiteral: "[]";
@@ -33,8 +36,6 @@ TupleLiteral: "()";
 //           |  <uop> <expr>
 //           |  <expr> <bop> <expr>
 //           |  <expr> <expr>
-//           |  'let' <ldecl> ... <ldecl> 'in' <expr>
-//           |  'letrec' <rdecl> ... <rdecl> 'in' <expr>
 //           |  'case' <expr> 'of' <nalt> ';' <calt>
 
 // Binary operators are grouped in the grammar by precedences

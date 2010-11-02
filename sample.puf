@@ -2,3 +2,13 @@
 
 foo = bar;
 foo bar baz = fn foo bar -> if kaka then baka else faka;
+f = letrec
+		a b c = qq;
+		c d e = ff;
+	in
+		let
+			a b c = e;
+			(a) = e;
+			(b, c, d) = s;
+		in
+			foobar;

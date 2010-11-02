@@ -8,6 +8,7 @@ class PufGenerator(destDir: String)
     
   def generate(tree: Program) {
       println(tree)
+      println(Dump.dumpNode(tree))
 //    val args = tree.toJavaMap()
 //    writeFile("GeneratedProgram.java", templates.getInstanceOf("program", args))
   }
