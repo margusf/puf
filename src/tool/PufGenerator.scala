@@ -20,7 +20,7 @@ object PufMain extends MainBase {
     for (arg <- sources) {
       grammar.parseFile(arg)
       checkErrors(grammar.errors)
-      
+
       new PufGenerator(destDir).generate(grammar.tree)        
     }
   }

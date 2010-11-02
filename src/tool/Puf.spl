@@ -1,14 +1,55 @@
 grammar puf.Puf;
 
-Program: Rdecl+;
+Program: Include* Rdecl+;
+
+Include: "#" "include" file=Str; 
 
 Rdecl: Flhs "=" Expr ";";
 
 Flhs: Id+;
 
-Expr: Id;
+option Expr: 
+	CaseExpr 
+	| LetrecExpr 
+	| LetExpr 
+	| FunExpr 
+	| IfExpr 
+	| ListLiteral
+	| TupleLiteral
+	| Id; // TODO: arithmetics.
 
+CaseExpr: "case";
+LetrecExpr: "letrec";
+LetExpr: "let";
+FunExpr: "fn" params=Id+ "->" Expr;
+IfExpr: "if" cond=Expr "then" ifThen=Expr "else" ifElse=Expr;
+ListLiteral: "[]";
+TupleLiteral: "()";
+
+// <expr>    := <ident>
+//           |  <num>
+//           |  '(' <expr> ',' ... ',' <expr> ')'
+//           |  '[' <expr> ',' ... ',' <expr> ']'
+//           |  <uop> <expr>
+//           |  <expr> <bop> <expr>
+//           |  <expr> <expr>
+//           |  'let' <ldecl> ... <ldecl> 'in' <expr>
+//           |  'letrec' <rdecl> ... <rdecl> 'in' <expr>
+//           |  'case' <expr> 'of' <nalt> ';' <calt>
+
+// Binary operators are grouped in the grammar by precedences
+// (multiplicative operators '*', '/", '%' bind tightest, logical or
+// '||' binds weakest). All binary operators are left-associative,
+// except list constructor ':', which is right-associative.
+// 
+// Function application and unary operators bind tighter than any 
+// binary operator (ie. "f 3 + 4" is equivalent to "(f 3) + 4").
+// Application is left-assotiative (ie. "f 3 4" is equivalent to
+// "(f 3) 4".
+
+terminal Str: '"' ~('"')* '"';
 terminal Id: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
+terminal Num: ('0'..'9')+;
 fragment MlComment: '/*' (~'*' | '*' ~'/')* '*/';
 fragment SlComment: '//' ~('\n'|'\r')*;
 hidden terminal Ws: (' '|'\t'|'\r'|'\n'|MlComment|SlComment)+;

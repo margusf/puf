@@ -1,2 +1,4 @@
+#include "prelude.puf"
+
 foo = bar;
-foo bar baz = kaka;
+foo bar baz = fn foo bar -> if kaka then baka else faka;
