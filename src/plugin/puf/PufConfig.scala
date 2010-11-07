@@ -61,7 +61,7 @@ class PufConfig extends APluginConfig {
 
     /** Return pair of matching brackets that will be highlighted in the
      * code editor. For example: <code>Array(("(", ")"), ("[", "]"))</code> */
-    def fences: Array[Tuple2[String, String]] = 
+    override def fences: Array[Tuple2[String, String]] = 
         Array( ("(", ")"), ("[", "]") )
 
     override def runGenerator(dir: String, file: String) {
