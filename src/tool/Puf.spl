@@ -1,5 +1,7 @@
 grammar puf.Puf;
 
+options (backtrack=true;)
+
 Program: Include* Rdecl+;
 
 Include: "#" "include" file=Str; 
@@ -19,7 +21,7 @@ option Expr:
 	| IfExpr 
 	| ListLiteral
 	| TupleLiteral
-	| Id; // TODO: arithmetics.
+	| OrExpr;
 
 CaseExpr: "case";
 LetrecExpr: "letrec" Rdecl+ "in" Expr;
@@ -29,24 +31,43 @@ IfExpr: "if" cond=Expr "then" ifThen=Expr "else" ifElse=Expr;
 ListLiteral: "[]";
 TupleLiteral: "()";
 
-// <expr>    := <ident>
-//           |  <num>
-//           |  '(' <expr> ',' ... ',' <expr> ')'
-//           |  '[' <expr> ',' ... ',' <expr> ']'
-//           |  <uop> <expr>
-//           |  <expr> <bop> <expr>
-//           |  <expr> <expr>
-//           |  'case' <expr> 'of' <nalt> ';' <calt>
+OrExpr: left=AndExpr ("||" rest=AndExpr)*;
+AndExpr: left=EqExpr ("&&" rest=EqExpr)*;
 
-// Binary operators are grouped in the grammar by precedences
-// (multiplicative operators '*', '/", '%' bind tightest, logical or
-// '||' binds weakest). All binary operators are left-associative,
-// except list constructor ':', which is right-associative.
-// 
-// Function application and unary operators bind tighter than any 
-// binary operator (ie. "f 3 + 4" is equivalent to "(f 3) + 4").
-// Application is left-assotiative (ie. "f 3 4" is equivalent to
-// "(f 3) 4".
+option EqExpr: Equals | NotEquals | CompareExpr;
+Equals: left=CompareExpr "==" right=CompareExpr;
+NotEquals: left=CompareExpr "/=" right=CompareExpr;
+
+option CompareExpr:
+    LessThan 
+    | LessEquals
+    | GreaterThan 
+    | GreaterEquals 
+    | ConsExpr;
+LessThan: left=ConsExpr "<" right=ConsExpr;
+LessEquals: left=ConsExpr "<=" right=ConsExpr;
+GreaterThan: left=ConsExpr ">" right=ConsExpr;
+GreaterEquals: left=ConsExpr ">=" right=ConsExpr;
+
+ConsExpr: left=PlusExpr (":" rest=PlusExpr)*;
+
+option PlusExpr: Plus | Minus | MulExpr;
+Plus: left=MulExpr ("+" rest=MulExpr)+;
+Minus: left=MulExpr ("-" rest=MulExpr)+;
+
+option MulExpr: Mul | Div | Mod | UnaryExpr;
+Mul: left=UnaryExpr ("*" rest=UnaryExpr)+;
+Div: left=UnaryExpr ("/" rest=UnaryExpr)+;
+Mod: left=UnaryExpr ("%" rest=UnaryExpr)+;
+
+option UnaryExpr: NegExpr | NotExpr | SelectExpr;
+NegExpr: "-" expr=PrimaryExpr;
+NotExpr: "not" expr=PrimaryExpr;
+// ApplyExpr: fun=PrimaryExpr param=PrimaryExpr;
+SelectExpr: "#" sel=Num tuple=PrimaryExpr;
+
+option PrimaryExpr: Id | Num | ParenExpr;
+ParenExpr: "(" expr=Expr ")";
 
 terminal Str: '"' ~('"')* '"';
 terminal Id: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
