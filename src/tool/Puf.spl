@@ -28,8 +28,8 @@ LetrecExpr: "letrec" Rdecl+ "in" Expr;
 LetExpr: "let" Decl+ "in" Expr;
 FunExpr: "fn" params=Id+ "->" Expr;
 IfExpr: "if" cond=Expr "then" ifThen=Expr "else" ifElse=Expr;
-ListLiteral: "[]";
-TupleLiteral: "()";
+ListLiteral: "listlit";
+TupleLiteral: "foof";
 
 OrExpr: left=AndExpr ("||" rest=AndExpr)*;
 AndExpr: left=EqExpr ("&&" rest=EqExpr)*;
@@ -49,7 +49,7 @@ LessEquals: left=ConsExpr "<=" right=ConsExpr;
 GreaterThan: left=ConsExpr ">" right=ConsExpr;
 GreaterEquals: left=ConsExpr ">=" right=ConsExpr;
 
-ConsExpr: left=PlusExpr (":" rest=PlusExpr)*;
+ConsExpr: left=PlusExpr (":" rest=ConsExpr)?;
 
 option PlusExpr: Plus | Minus | MulExpr;
 Plus: left=MulExpr ("+" rest=MulExpr)+;
@@ -60,13 +60,13 @@ Mul: left=UnaryExpr ("*" rest=UnaryExpr)+;
 Div: left=UnaryExpr ("/" rest=UnaryExpr)+;
 Mod: left=UnaryExpr ("%" rest=UnaryExpr)+;
 
-option UnaryExpr: NegExpr | NotExpr | SelectExpr;
+option UnaryExpr: NegExpr | NotExpr | SelectExpr | ApplyExpr;
 NegExpr: "-" expr=PrimaryExpr;
 NotExpr: "not" expr=PrimaryExpr;
-// ApplyExpr: fun=PrimaryExpr param=PrimaryExpr;
+ApplyExpr: fun=PrimaryExpr (param=ApplyExpr)?;
 SelectExpr: "#" sel=Num tuple=PrimaryExpr;
 
-option PrimaryExpr: Id | Num | ParenExpr;
+option PrimaryExpr: Id | Num;
 ParenExpr: "(" expr=Expr ")";
 
 terminal Str: '"' ~('"')* '"';
