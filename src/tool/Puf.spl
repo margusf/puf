@@ -52,11 +52,7 @@ GreaterEquals: left=ConsExpr ">=" right=ConsExpr;
 ConsExpr: left=PlusExpr (":" rest=ConsExpr)?;
 
 PlusExpr: left=MulExpr (op=PlusExprOp rest=MulExpr)*;
-// Plus: left=MulExpr ("+" rest=MulExpr)+;
-// Minus: left=MulExpr ("-" rest=MulExpr)+;
-
 option PlusExprOp: PlusOp | MinusOp;
-
 terminal PlusOp: "+";
 terminal MinusOp: "-";
 
@@ -72,7 +68,7 @@ NotExpr: "not" expr=PrimaryExpr;
 ApplyExpr: fun=PrimaryExpr (param=ApplyExpr)?;
 SelectExpr: "#" sel=Num tuple=PrimaryExpr;
 
-option PrimaryExpr: Id | Num;
+option PrimaryExpr: Id | Num | ParenExpr;
 ParenExpr: "(" expr=Expr ")";
 
 terminal Str: '"' ~('"')* '"';
