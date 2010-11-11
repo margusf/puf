@@ -51,9 +51,14 @@ GreaterEquals: left=ConsExpr ">=" right=ConsExpr;
 
 ConsExpr: left=PlusExpr (":" rest=ConsExpr)?;
 
-option PlusExpr: Plus | Minus | MulExpr;
-Plus: left=MulExpr ("+" rest=MulExpr)+;
-Minus: left=MulExpr ("-" rest=MulExpr)+;
+PlusExpr: left=MulExpr (op=PlusExprOp right=MulExpr)*;
+// Plus: left=MulExpr ("+" rest=MulExpr)+;
+// Minus: left=MulExpr ("-" rest=MulExpr)+;
+
+option PlusExprOp: PlusOp | MinusOp;
+
+terminal PlusOp: "+";
+terminal MinusOp: "-";
 
 option MulExpr: Mul | Div | Mod | UnaryExpr;
 Mul: left=UnaryExpr ("*" rest=UnaryExpr)+;
@@ -61,7 +66,7 @@ Div: left=UnaryExpr ("/" rest=UnaryExpr)+;
 Mod: left=UnaryExpr ("%" rest=UnaryExpr)+;
 
 option UnaryExpr: NegExpr | NotExpr | SelectExpr | ApplyExpr;
-NegExpr: "-" expr=PrimaryExpr;
+NegExpr: MinusOp expr=PrimaryExpr;
 NotExpr: "not" expr=PrimaryExpr;
 ApplyExpr: fun=PrimaryExpr (param=ApplyExpr)?;
 SelectExpr: "#" sel=Num tuple=PrimaryExpr;
