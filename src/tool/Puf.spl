@@ -51,7 +51,7 @@ GreaterEquals: left=ConsExpr ">=" right=ConsExpr;
 
 ConsExpr: left=PlusExpr (":" rest=ConsExpr)?;
 
-PlusExpr: left=MulExpr (op=PlusExprOp right=MulExpr)*;
+PlusExpr: left=MulExpr (op=PlusExprOp rest=MulExpr)*;
 // Plus: left=MulExpr ("+" rest=MulExpr)+;
 // Minus: left=MulExpr ("-" rest=MulExpr)+;
 
@@ -60,10 +60,11 @@ option PlusExprOp: PlusOp | MinusOp;
 terminal PlusOp: "+";
 terminal MinusOp: "-";
 
-option MulExpr: Mul | Div | Mod | UnaryExpr;
-Mul: left=UnaryExpr ("*" rest=UnaryExpr)+;
-Div: left=UnaryExpr ("/" rest=UnaryExpr)+;
-Mod: left=UnaryExpr ("%" rest=UnaryExpr)+;
+MulExpr: left=UnaryExpr (op=MulExprOp rest=UnaryExpr)*;
+option MulExprOp: MulOp | DivOp | ModOp;
+terminal MulOp: "*";
+terminal DivOp: "/";
+terminal ModOp: "%";
 
 option UnaryExpr: NegExpr | NotExpr | SelectExpr | ApplyExpr;
 NegExpr: MinusOp expr=PrimaryExpr;
