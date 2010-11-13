@@ -20,7 +20,6 @@ option Expr:
 	| FunExpr 
 	| IfExpr 
 	| ListLiteral
-	| TupleLiteral
 	| OrExpr;
 
 CaseExpr: "case";
@@ -29,7 +28,6 @@ LetExpr: "let" Decl+ "in" Expr;
 FunExpr: "fn" params=Id+ "->" Expr;
 IfExpr: "if" cond=Expr "then" ifThen=Expr "else" ifElse=Expr;
 ListLiteral: "listlit";
-TupleLiteral: "foof";
 
 OrExpr: left=AndExpr ("||" rest=AndExpr)*;
 AndExpr: left=EqExpr ("&&" rest=EqExpr)*;
@@ -68,8 +66,9 @@ NotExpr: "not" expr=PrimaryExpr;
 ApplyExpr: fun=PrimaryExpr (params=PrimaryExpr)+;
 SelectExpr: "#" sel=Num tuple=PrimaryExpr;
 
-option PrimaryExpr: Id | Num | ParenExpr;
+option PrimaryExpr: Id | Num | ParenExpr | TupleLiteral;
 ParenExpr: "(" expr=Expr ")";
+TupleLiteral: "(" ")" | "(" first=Expr ("," rest=Expr)+ ")";
 
 terminal Str: '"' ~('"')* '"';
 terminal Id: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
