@@ -62,10 +62,10 @@ terminal MulOp: "*";
 terminal DivOp: "/";
 terminal ModOp: "%";
 
-option UnaryExpr: NegExpr | NotExpr | SelectExpr | ApplyExpr;
+option UnaryExpr: NegExpr | NotExpr | SelectExpr | ApplyExpr | PrimaryExpr;
 NegExpr: MinusOp expr=PrimaryExpr;
 NotExpr: "not" expr=PrimaryExpr;
-ApplyExpr: fun=PrimaryExpr (param=ApplyExpr)?;
+ApplyExpr: fun=PrimaryExpr (params=PrimaryExpr)+;
 SelectExpr: "#" sel=Num tuple=PrimaryExpr;
 
 option PrimaryExpr: Id | Num | ParenExpr;
