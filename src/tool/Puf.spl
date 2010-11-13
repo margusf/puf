@@ -1,6 +1,6 @@
 grammar puf.Puf;
 
-options (backtrack=true;)
+// options (backtrack=true;)
 
 Program: Include* Rdecl+;
 
@@ -19,7 +19,6 @@ option Expr:
 	| LetExpr 
 	| FunExpr 
 	| IfExpr 
-	| ListLiteral
 	| OrExpr;
 
 CaseExpr: "case";
@@ -27,25 +26,15 @@ LetrecExpr: "letrec" Rdecl+ "in" Expr;
 LetExpr: "let" Decl+ "in" Expr;
 FunExpr: "fn" params=Id+ "->" Expr;
 IfExpr: "if" cond=Expr "then" ifThen=Expr "else" ifElse=Expr;
-ListLiteral: "listlit";
 
 OrExpr: left=AndExpr ("||" rest=AndExpr)*;
 AndExpr: left=EqExpr ("&&" rest=EqExpr)*;
 
-option EqExpr: Equals | NotEquals | CompareExpr;
-Equals: left=CompareExpr "==" right=CompareExpr;
-NotEquals: left=CompareExpr "/=" right=CompareExpr;
+EqExpr: left=CompareExpr (op=EqOp right=CompareExpr)?;
+terminal EqOp: "==" | "/=";
 
-option CompareExpr:
-    LessThan 
-    | LessEquals
-    | GreaterThan 
-    | GreaterEquals 
-    | ConsExpr;
-LessThan: left=ConsExpr "<" right=ConsExpr;
-LessEquals: left=ConsExpr "<=" right=ConsExpr;
-GreaterThan: left=ConsExpr ">" right=ConsExpr;
-GreaterEquals: left=ConsExpr ">=" right=ConsExpr;
+CompareExpr: left=ConsExpr (op=CompareOp right=ConsExpr)?;
+terminal CompareOp: "<" | "<=" | ">" | ">=";
 
 ConsExpr: left=PlusExpr (":" rest=ConsExpr)?;
 
@@ -60,15 +49,28 @@ terminal MulOp: "*";
 terminal DivOp: "/";
 terminal ModOp: "%";
 
-option UnaryExpr: NegExpr | NotExpr | SelectExpr | ApplyExpr | PrimaryExpr;
+option UnaryExpr: 
+    NegExpr 
+    | NotExpr 
+    | SelectExpr 
+    | ApplyExpr;
 NegExpr: MinusOp expr=PrimaryExpr;
 NotExpr: "not" expr=PrimaryExpr;
-ApplyExpr: fun=PrimaryExpr (params=PrimaryExpr)+;
+ApplyExpr: fun=PrimaryExpr (params=PrimaryExpr)*;
 SelectExpr: "#" sel=Num tuple=PrimaryExpr;
 
-option PrimaryExpr: Id | Num | ParenExpr | TupleLiteral;
-ParenExpr: "(" expr=Expr ")";
-TupleLiteral: "(" ")" | "(" first=Expr ("," rest=Expr)+ ")";
+option PrimaryExpr:
+    Id 
+    | Num 
+    | TupleLiteral
+    | ListLiteral
+    ;
+TupleLiteral:
+    "(" ")"
+    | "(" first=Expr ("," rest=Expr)* ")";
+ListLiteral: 
+    "[" "]" 
+    | "[" first=Expr ("," rest=Expr)+ "]";
 
 terminal Str: '"' ~('"')* '"';
 terminal Id: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
