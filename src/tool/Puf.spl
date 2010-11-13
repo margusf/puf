@@ -21,7 +21,9 @@ option Expr:
 	| IfExpr 
 	| OrExpr;
 
-CaseExpr: "case";
+CaseExpr: "case" expr=Expr "of" nilAlt=NilAlt ";" consAlt=ConsAlt;
+NilAlt: "[" "]" "->" expr=Expr;
+ConsAlt: head=Id ":" tail=Id "->" expr=Expr;
 LetrecExpr: "letrec" Rdecl+ "in" Expr;
 LetExpr: "let" Decl+ "in" Expr;
 FunExpr: "fn" params=Id+ "->" Expr;
