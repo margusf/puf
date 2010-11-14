@@ -1,0 +1,6 @@
+#include prelude.puf
+
+// This one makes quite a few applications of id.
+
+id   = S K K;
+main = twice twice twice id 3;

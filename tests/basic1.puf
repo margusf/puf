@@ -1,0 +1,6 @@
+#include prelude.puf
+
+
+// Should return 3 rather quickly.
+
+main = I 3;

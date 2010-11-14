@@ -1,0 +1,5 @@
+#include prelude.puf
+
+// The expression (I I I) should be evaluated only once.
+
+main = twice (I I I) 3;

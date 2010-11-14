@@ -1,0 +1,12 @@
+#include prelude.puf
+
+// Greatest common divisor
+
+gcd a b = if a == b
+          then a
+          else if a < b
+          then gcd b a
+          else gcd b (a-b);
+
+main = gcd 6 10;
+

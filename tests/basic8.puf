@@ -1,0 +1,12 @@
+#include prelude.puf
+
+// Let-expressions and scoping.
+
+oct g x = let g = twice g;
+              g = twice g;
+          in g (g x);
+
+inc x = x + 1;
+
+main = oct inc 0;
+

@@ -1,0 +1,6 @@
+#include prelude.puf
+
+// Should return 3, but requires couple of more steps.
+
+id   = S K K;
+main = id 3;

@@ -1,0 +1,22 @@
+/***********************************************************
+ *                                                         *
+ *                      PRELUDE                            *
+ *                                                         *
+ ***********************************************************/
+
+// Basic combinators
+
+I x     = x;
+K x y   = x;
+K1 x y  = y;
+S f g x = f x (g x);
+compose f g x = f (g x);
+twice f = compose f f;
+
+
+// Functional representation of lists
+
+cons x xs = fn cc cn -> cc x xs;
+nil       = fn cc cn -> cn;
+hd xs     = xs K I;
+tl xs     = xs K1 I;
