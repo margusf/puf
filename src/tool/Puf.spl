@@ -1,8 +1,8 @@
-grammar puf.Puf;
+grammar puf.spl.Puf;
 
 // options (backtrack=true;)
 
-Program: Include* Rdecl+;
+Program: Include? Rdecl+;
 
 Include: "#" "include" file=Id ".puf"; 
 
