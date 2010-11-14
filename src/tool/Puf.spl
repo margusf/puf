@@ -4,7 +4,7 @@ grammar puf.Puf;
 
 Program: Include* Rdecl+;
 
-Include: "#" "include" file=Str; 
+Include: "#" "include" file=Id ".puf"; 
 
 option Decl: Rdecl | Tdecl;
 Rdecl: Flhs "=" Expr ";";

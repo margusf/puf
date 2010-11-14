@@ -40,10 +40,10 @@
 
         <!-- compile sources (together with the generated grammar) -->
         <mkdir dir="${target}/classes"/>
-        <scalac destdir="${target}/classes" classpathref="tool-deps">
+        <fsc destdir="${target}/classes" classpathref="tool-deps">
             <src location="${target}/gen"/>
             <src location="${basedir}/src/tool"/>
-        </scalac>
+        </fsc>
         <javac destdir="${target}/classes" srcdir="${target}/gen" source="1.4"
                includeantruntime="false" classpathref="tool-deps" encoding="UTF-8"/>
 
@@ -78,14 +78,14 @@
     <!-- builds the plugin -->
     <target name="plugin" depends="plugin-deps,tool">
         <mkdir dir="${target}/plugin"/>
-        <scalac destdir="${target}/plugin">
+        <fsc destdir="${target}/plugin">
             <src location="${basedir}/src/plugin"/>
             <classpath>
                 <path refid="plugin-deps"/>
                 <path location="${tool-jar}"/>
                 <fileset dir="${eclipse}/plugins" includes="**/*.jar"/>
             </classpath>
-        </scalac>
+        </fsc>
         <jar destfile="${target}/puf-lang-plugin.jar" basedir="${target}/plugin"
              manifest="${basedir}/META-INF/MANIFEST.MF">
             <fileset dir="${basedir}" includes="plugin.xml"/>
