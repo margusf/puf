@@ -2,16 +2,16 @@ grammar puf.spl.Puf;
 
 // options (backtrack=true;)
 
-Program: Include? Rdecl+;
+Program: Include? decls=Rdecl+;
 
 Include: "#" "include" file=Id ".puf"; 
 
 option Decl: Rdecl | Tdecl;
-Rdecl: Flhs "=" Expr ";";
-Tdecl: Tlhs "=" Expr ";";
+Rdecl: lhs=Flhs "=" expr=Expr ";";
+Tdecl: lhs=Tlhs "=" expr=Expr ";";
 
 Flhs: Id+;
-Tlhs: "(" f=Id ("," r=Id)* ")";
+Tlhs: "(" h=Id ("," t=Id)* ")";
 
 option Expr: 
 	CaseExpr 
@@ -24,8 +24,8 @@ option Expr:
 CaseExpr: "case" expr=Expr "of" nilAlt=NilAlt ";" consAlt=ConsAlt;
 NilAlt: "[" "]" "->" expr=Expr;
 ConsAlt: head=Id ":" tail=Id "->" expr=Expr;
-LetrecExpr: "letrec" Rdecl+ "in" Expr;
-LetExpr: "let" Decl+ "in" Expr;
+LetrecExpr: "letrec" decl=Rdecl+ "in" Expr;
+LetExpr: "let" decl=Decl+ "in" Expr;
 FunExpr: "fn" params=Id+ "->" Expr;
 IfExpr: "if" cond=Expr "then" ifThen=Expr "else" ifElse=Expr;
 
@@ -38,18 +38,17 @@ terminal EqOp: "==" | "/=";
 CompareExpr: left=ConsExpr (op=CompareOp right=ConsExpr)?;
 terminal CompareOp: "<" | "<=" | ">" | ">=";
 
-ConsExpr: left=PlusExpr (":" rest=ConsExpr)?;
+ConsExpr: left=PlusExpr (":" right=ConsExpr)?;
 
 PlusExpr: left=MulExpr (op=PlusExprOp rest=MulExpr)*;
-option PlusExprOp: PlusOp | MinusOp;
+option PlusExprOp {
+    def text: String
+}: PlusOp | MinusOp;
 terminal PlusOp: "+";
 terminal MinusOp: "-";
 
 MulExpr: left=UnaryExpr (op=MulExprOp rest=UnaryExpr)*;
-option MulExprOp: MulOp | DivOp | ModOp;
-terminal MulOp: "*";
-terminal DivOp: "/";
-terminal ModOp: "%";
+terminal MulExprOp: "*" | "/" | "%";
 
 option UnaryExpr: 
     NegExpr 

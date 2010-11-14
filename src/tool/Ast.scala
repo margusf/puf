@@ -12,7 +12,7 @@ trait WithSource extends SourceLocation {
     def startColumn = loc.startColumn
     def endColumn = loc.endColumn
 
-    def withLocation(src: SourceLocation): this.type = {
+    def withSource(src: SourceLocation): this.type = {
         loc = src
         this
     }
@@ -21,7 +21,7 @@ trait WithSource extends SourceLocation {
 // The actual AST classes, desugared from the ugly Simpl AST.
 trait Expr extends WithSource
 
-case class CaseExpr(cond: Expr, nilAlt: Expr, consAlt: ConsAlt) extends Expr
+case class Case(cond: Expr, nilAlt: Expr, consAlt: ConsAlt) extends Expr
 case class ConsAlt(head: Id, tail: Id, expr: Expr) extends WithSource
 case class Letrec(decls: List[Decl], expr: Expr) extends Expr
 case class Let(decls: List[Decl], expr: Expr) extends Expr
@@ -35,26 +35,33 @@ case class Binary(op: BinaryOp.Type, left: Expr, right: Expr) extends Expr
 case class Unary(op: UnaryOp.Type, expr: Expr) extends Expr
 case class Apply(fun: Expr, params: List[Expr]) extends Expr
 case class Select(sel: Num, expr: Expr) extends Expr
-case class TupleList(parts: List[Expr]) extends Expr
+case class TupleLit(parts: List[Expr]) extends Expr
 case class ListLit(parts: List[Expr]) extends Expr
 
 case class Id(text: String) extends Expr
 case class Num(num: Int) extends Expr
 
-
 object BinaryOp extends Enumeration {
     type Type = Value
 
-    val Plus, Minus,
-        Times, Div, Mod,
-        Cons, 
-        LessThan, LessEqual, GreaterThan, GreaterEqual,
-        Equals, NotEquals,
-        And, Or = Value
+    val Plus = Value("+")
+    val Minus = Value("-")
+    val Times = Value("*")
+    val Div = Value("/")
+    val Mod = Value("%")
+    val Cons = Value(":")
+    val LessThan = Value("<")
+    val LessEqual = Value("<=")
+    val GreaterThan = Value(">")
+    val GreaterEqual = Value(">=")
+    val Equals = Value("==")
+    val NotEquals = Value("/=")
+    val And = Value("&&")
+    val Or = Value("||")
 }
 
 object UnaryOp extends Enumeration {
     type Type = Value
     
-    val UMinus, Not = Value
+    val Neg, Not = Value
 }
