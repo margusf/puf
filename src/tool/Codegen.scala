@@ -58,7 +58,33 @@ class Codegen {
                 codeB(elseExpr, env, sd)
                 code += lblCont
             case _ =>
-                throw new Exception("Unsupported expression: " + expr)
+                codeV(expr, env, sd)
+                code += Getbasic()
+        }
+    }
+
+    def codeV(expr: Expr, env: Env, sd: Int) {
+        expr match {
+            // Primitives are done with codeB
+            case Num(_) | Unary(_, _) | Binary(_, _, _) =>
+                codeB(expr, env, sd)
+                code += Mkbasic()
+            // If is very similar to codeB, but we use codeV to
+            // generate then and else branches and so avoid
+            // unnecessary MKBASIC operation.
+            case If(cond, ifExpr, elseExpr) =>
+                // Labels for else and for code after if block.
+                val lblElse = Label()
+                val lblCont = Label()
+
+                codeB(cond, env, sd)
+                code += Jumpz(lblElse)
+                codeV(ifExpr, env, sd)
+                code += Jump(lblCont)
+                code += lblElse
+                codeV(elseExpr, env, sd)
+                code += lblCont
+            case _ => throw new Exception("Unsupported expression: " + expr)
         }
     }
 

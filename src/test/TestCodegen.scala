@@ -39,7 +39,7 @@ object TestCodegen extends GeneratorBase(null) {
         val filename = "target/tests/test" + count + ".cbn"
         count += 1
         val codegen = new Codegen
-        codegen.codeB(expr, new Env, 0)
+        codegen.codeV(expr, new Env, 0)
         codegen.code += mama.Halt()
         codegen.finalizeCode()
         println("Saved as: " + filename)

@@ -33,6 +33,10 @@ case class Jump(label: Label) extends Opcode("JUMP", label)
 case class Jumpz(label: Label) extends Opcode("JUMPZ", label)
 case class Halt extends Opcode("HALT")
 case class Loadc(param: Int) extends Opcode("LOADC", param)
+case class Getbasic extends Opcode("GETBASIC")
+case class Mkbasic extends Opcode("MKBASIC")
+
+// Arithmetic operators.
 case class Neg extends Opcode("NEG")
 case class Add extends Opcode("ADD")
 case class Sub extends Opcode("SUB")
