@@ -4,7 +4,6 @@ import ee.cyber.simplicitas._
 
 object Desugar {
     def desugar(prog: spl.Program): ast.Expr =
-        // TODO: include the other file.
         ast.Letrec(
                 prog.decls.map(desugar), 
                 ast.Id("main"))
@@ -44,7 +43,7 @@ object Desugar {
             ast.Letrec(l.decl.map(desugar),
                     desugar(l.expr))
         case f: spl.FunExpr =>
-            ast.Lambda(f.params.map(desugar), desugar(expr))
+            ast.Lambda(f.params.map(desugar), desugar(f.expr))
         case i: spl.IfExpr =>
             ast.If(desugar(i.cond),
                     desugar(i.ifThen),

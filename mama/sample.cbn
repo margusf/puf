@@ -1,0 +1,23 @@
+loadc 17
+mkbasic
+pushloc 0
+mkvec 1
+mkfunval A
+mark B
+loadc 42
+mkbasic
+pushloc 4
+eval
+apply
+B: slide 2
+halt
+A: targ 1
+pushglob 0
+eval
+getbasic
+pushloc 1
+eval
+getbasic
+add
+mkbasic
+return 1

@@ -52,7 +52,7 @@ object PufConfig {
 class PufConfig extends APluginConfig {
     /** Parses the input using the correct grammar. */
     def parse(ctx: ParseCtx) {
-        ctx parse new PufGrammar()
+        ctx parse new spl.PufGrammar()
     }
 
     def treeLabel(node: CommonNode) = null
