@@ -64,6 +64,27 @@
         </java>
     </target>
 
+	<target name="tool-test" depends="tool-deps">
+		<!-- compile tests. -->
+		<mkdir dir="${target}/test-classes"/>
+        <fsc destdir="${target}/test-classes">
+            <classpath>
+                <path refid="tool-deps"/>
+                <path location="${tool-jar}"/>
+            </classpath>
+            <src location="${basedir}/src/test"/>
+        </fsc>
+
+        <!-- run test -->
+        <java classname="puf.TestCodegen" fork="true">
+            <classpath>
+                <path refid="tool-deps"/>
+                <path location="${tool-jar}"/>
+				<path location="${target}/test-classes"/>
+            </classpath>
+        </java>
+	</target>
+
     <!-- generate documentation -->
     <target name="grammar-doc" depends="tool">
         <java classname="ee.cyber.simplicitas.ide.SimplMain" fork="true">
