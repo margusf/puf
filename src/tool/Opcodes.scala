@@ -5,10 +5,32 @@ abstract class Opcode(code: String, params: Array[Any]) {
         this(code, Array[Any]())
     def this(code: String, param: Int) = 
         this(code, Array[Any](param))
+    def this(code: String, param: Label) =
+        this(code, Array[Any](param))
 
-    override def toString = code + " " + params.mkString(" ")
+    override def toString =
+        code + " " + params.map(doParam).mkString(" ")
+
+    def doParam(p: Any): String = p match {
+        case l: Label => l.name
+        case _ => String.valueOf(p)
+    }
 }
 
+case class Label extends Opcode("LABEL") {
+    var name: String = null
+
+    def init(nameProvider: => String) {
+        if (name eq null) {
+            name = nameProvider
+        }
+    }
+
+    override def toString = name + ":"
+}
+
+case class Jump(label: Label) extends Opcode("JUMP", label)
+case class Jumpz(label: Label) extends Opcode("JUMPZ", label)
 case class Halt extends Opcode("HALT")
 case class Loadc(param: Int) extends Opcode("LOADC", param)
 case class Neg extends Opcode("NEG")

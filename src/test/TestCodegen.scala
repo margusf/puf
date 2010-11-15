@@ -24,6 +24,11 @@ object TestCodegen extends GeneratorBase(null) {
                     Num(4)),
                 Num(5)),
             Num(7)))
+        generate(If(Num(1), Num(2), Num(3)))
+        generate(If(
+                Binary(BinaryOp.Minus, Num(1), Num(1)),
+                Num(2),
+                Num(3)))
     }
 
     var count = 1
@@ -36,6 +41,7 @@ object TestCodegen extends GeneratorBase(null) {
         val codegen = new Codegen
         codegen.codeB(expr, new Env, 0)
         codegen.code += mama.Halt()
+        codegen.finalizeCode()
         println("Saved as: " + filename)
         println(codegen.codeOutput)
         writeFile(filename, codegen.codeOutput)

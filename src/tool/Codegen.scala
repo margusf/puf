@@ -45,11 +45,39 @@ class Codegen {
                 codeB(l, env, sd)
                 codeB(r, env, sd + 1)
                 code += binaryOps(op)
+            case If(cond, ifExpr, elseExpr) =>
+                // Labels for else and for code after if block.
+                val lblElse = Label()
+                val lblCont = Label()
+
+                codeB(cond, env, sd)
+                code += Jumpz(lblElse)
+                codeB(ifExpr, env, sd)
+                code += Jump(lblCont)
+                code += lblElse
+                codeB(elseExpr, env, sd)
+                code += lblCont
             case _ =>
                 throw new Exception("Unsupported expression: " + expr)
         }
     }
 
+    def finalizeCode() {
+        var labelCounter = 0
+        
+        def nameProvider = {
+            labelCounter += 1
+            "L" + labelCounter
+        }
+
+        for (instr <- code) {
+            instr match {
+                case l: Label => l.init(nameProvider)
+                case _ => ()
+            }
+        }
+    }
+    
     def codeOutput =
         code.mkString("", "\n", "\n")
 }
