@@ -12,6 +12,21 @@ object Codegen {
     val unaryOps = Map(
             UnaryOp.Not -> Not(),
             UnaryOp.Neg -> Neg())
+
+    val binaryOps = Map(
+            BinaryOp.Plus -> Add(),
+            BinaryOp.Minus -> Sub(),
+            BinaryOp.Times -> Mul(),
+            BinaryOp.Div -> Div(),
+            BinaryOp.Mod -> Mod(),
+            BinaryOp.LessThan -> Le(),
+            BinaryOp.LessEqual -> Leq(),
+            BinaryOp.GreaterThan -> Ge(),
+            BinaryOp.GreaterEqual -> Geq(),
+            BinaryOp.And -> And(),
+            BinaryOp.Or -> Or(),
+            BinaryOp.Equals -> Eq(),
+            BinaryOp.NotEquals -> Neq())
 }
 
 class Codegen {
@@ -26,6 +41,10 @@ class Codegen {
             case Unary(op, e) =>
                 codeB(e, env, sd)
                 code += unaryOps(op)
+            case Binary(op, l, r) =>
+                codeB(l, env, sd)
+                codeB(r, env, sd + 1)
+                code += binaryOps(op)
             case _ =>
                 throw new Exception("Unsupported expression: " + expr)
         }
