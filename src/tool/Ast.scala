@@ -28,7 +28,6 @@ case class Let(decls: List[Decl], expr: Expr) extends Expr
 case class Decl(left: DeclLeft, right: Expr) extends WithSource
 trait DeclLeft extends WithSource
 case class TupleLeft(items: List[Id]) extends DeclLeft
-case class FunLeft(fun: Id, args: List[Id]) extends DeclLeft
 case class Lambda(params: List[Id], expr: Expr) extends Expr
 case class If(cond: Expr, ifExpr: Expr, elseExpr: Expr) extends Expr
 case class Binary(op: BinaryOp.Type, left: Expr, right: Expr) extends Expr
@@ -38,7 +37,7 @@ case class Select(sel: Num, expr: Expr) extends Expr
 case class TupleLit(parts: List[Expr]) extends Expr
 case class ListLit(parts: List[Expr]) extends Expr
 
-case class Id(text: String) extends Expr
+case class Id(text: String) extends Expr with DeclLeft
 case class Num(num: Int) extends Expr
 
 object BinaryOp extends Enumeration {

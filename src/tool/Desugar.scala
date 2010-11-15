@@ -13,18 +13,22 @@ object Desugar {
         case td: spl.Tdecl => desugar(td)
     }
                 
-    def desugar(decl: spl.Rdecl): ast.Decl =
-        ast.Decl(desugar(decl.lhs), desugar(decl.expr))
+    def desugar(decl: spl.Rdecl): ast.Decl = {
+        val valExpr = desugar(decl.expr)
+
+        decl.lhs.id match {
+            case id :: Nil =>
+                ast.Decl(desugar(id), valExpr)
+            case fun :: args =>
+                ast.Decl(desugar(fun), 
+                        ast.Lambda(args.map(desugar), valExpr))
+            case _ =>
+                throw new DesugarException(decl.lhs)
+        }
+    }
 
     def desugar(decl: spl.Tdecl): ast.Decl =
         ast.Decl(desugar(decl.lhs), desugar(decl.expr))
-    
-    def desugar(lhs: spl.Flhs): ast.DeclLeft = lhs.id match {
-        case fun :: args =>
-            ast.FunLeft(desugar(fun), args.map(desugar))
-        case _ =>
-            throw new DesugarException(lhs)
-    }
     
     def desugar(lhs: spl.Tlhs): ast.DeclLeft =
         ast.TupleLeft((lhs.h :: lhs.t).map(desugar))
