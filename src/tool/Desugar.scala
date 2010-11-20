@@ -4,8 +4,7 @@ import ee.cyber.simplicitas._
 
 object Desugar {
     def desugar(prog: spl.Program): ast.Expr =
-        // TODO, if letrec is implemented, change this to letrec.
-        ast.Let(
+        ast.Letrec(
                 prog.decls.map(desugar), 
                 ast.Id("main"))
 

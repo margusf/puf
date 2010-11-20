@@ -67,7 +67,24 @@ class Codegen {
                     decls.foldLeft((env, sd))(processDecl)
                 codeV(expr, newEnv, newSd)
                 code += Slide(decls.size)
-            // TODO: letrec
+            case Letrec(decls, expr) =>
+                val newDecls = checkLetrecDecls(decls)
+                val mappings = letrecMappings(newDecls, sd)
+                val newEnv = env.extend(mappings)
+                println("letrec, newenv = " + newEnv)
+                val newSd = sd + mappings.size
+                var rewrite = mappings.size
+
+                code += Alloc(mappings.size)
+                
+                for (decl <- decls) {
+                    codeV(decl.right, newEnv, newSd)
+                    code += Rewrite(rewrite)
+                    rewrite -= 1
+                }
+                
+                codeV(expr, newEnv, newSd)
+                code += Slide(mappings.size)
             case Lambda(params, body) =>
                 val freeVars = FreeVars.get(expr).toList
                 val bodyEnv = Env.functionEnv(freeVars, params.map(_.text))
@@ -126,6 +143,19 @@ class Codegen {
                 // TODO: add support for tuples.
                 throw new Exception("Unsupported: tuple let")
         }
+    }
+
+    def checkLetrecDecls(decls: List[Decl]) = decls // TODO
+    
+    def letrecMappings(decls: List[Decl], sd: Int) = {
+        val idList = for (d <- decls)
+            yield d.left match {
+                case Id(name) =>
+                    name
+                case TupleLeft(_) =>
+                    throw new Exception("Tuples are not supported in letrec")
+            }
+        idList.zip(Range(sd + 1, sd + idList.size + 1)).toMap
     }
 
     def finalizeCode() {

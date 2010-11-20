@@ -32,6 +32,9 @@ object TestCodegen extends GeneratorBase(null) {
         generate("a = 10; b = a + 1; main = let x = a; y = b; in x + y;")
         generate("a = 1; b = 2; f x y = b + x + y; g = f 10; main = g 100;")
         generate("p x = fn y -> x + y; main = p 1 2;")
+        generate("even x = if x == 0 then 1 else odd (x - 1);" +
+        		"odd x = if x == 0 then 0 else even (x - 1);" +
+        		"main = even 10;")
     }
 
     var count = 1
