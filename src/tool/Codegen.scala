@@ -5,7 +5,22 @@ import mama._
 
 import collection.mutable.ListBuffer
 
-class Env {
+class Env(val parent: Env, mapping: Map[String, Int]) {
+    def apply(id: String): Int =
+        if (mapping.contains(id))
+            mapping(id)
+        else
+            parent(id)
+
+    def extend(mapping: Map[String, Int]) =
+        new Env(this, mapping)
+}
+
+object Env {
+    val empty = new Env(null, null) {
+        override def apply(id: String): Int =
+            throw new Exception("Unknown identifier: " + id)
+    }
 }
 
 object Codegen {
@@ -84,7 +99,30 @@ class Codegen {
                 code += lblElse
                 codeV(elseExpr, env, sd)
                 code += lblCont
+            case Id(text) =>
+                val i = env(text)
+                code += Pushloc(sd - i)
+            case Let(decls, expr) =>
+                val (newEnv, newSd) = 
+                    decls.foldLeft((env, sd))(processDecl)
+                codeV(expr, newEnv, newSd)
+                code += Slide(decls.size)
             case _ => throw new Exception("Unsupported expression: " + expr)
+        }
+    }
+
+    /** Helper function for generating code for declaration items in let
+      * expression. */
+    def processDecl(prev: Tuple2[Env, Int], decl: Decl): 
+            Tuple2[Env, Int] = {
+        val (env, sd) = prev
+        codeV(decl.right, env, sd)
+        decl.left match {
+            case Id(txt) =>
+                (env.extend(Map(txt -> (sd + 1))), sd + 1)
+            case TupleLeft(items) =>
+                // TODO: add support for tuples.
+                throw new Exception("Unsupported: tuple let")
         }
     }
 

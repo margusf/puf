@@ -4,7 +4,8 @@ import ee.cyber.simplicitas._
 
 object Desugar {
     def desugar(prog: spl.Program): ast.Expr =
-        ast.Letrec(
+        // TODO, if letrec is implemented, change this to letrec.
+        ast.Let(
                 prog.decls.map(desugar), 
                 ast.Id("main"))
 
@@ -44,7 +45,7 @@ object Desugar {
             ast.Letrec(lr.decl.map(desugar),
                     desugar(lr.expr))
         case l: spl.LetExpr =>
-            ast.Letrec(l.decl.map(desugar),
+            ast.Let(l.decl.map(desugar),
                     desugar(l.expr))
         case f: spl.FunExpr =>
             ast.Lambda(f.params.map(desugar), desugar(f.expr))

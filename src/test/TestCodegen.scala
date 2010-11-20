@@ -2,7 +2,7 @@ package puf
 
 import ast._
 
-import ee.cyber.simplicitas.GeneratorBase
+import ee.cyber.simplicitas.{GeneratorBase, SourceMessage}
 
 object TestCodegen extends GeneratorBase(null) {
     def main(args: Array[String]) {
@@ -29,6 +29,7 @@ object TestCodegen extends GeneratorBase(null) {
                 Binary(BinaryOp.Minus, Num(1), Num(1)),
                 Num(2),
                 Num(3)))
+        generate("a = 10; b = a + 1; main = let x = a; y = b; in x + y;")
     }
 
     var count = 1
@@ -39,11 +40,26 @@ object TestCodegen extends GeneratorBase(null) {
         val filename = "target/tests/test" + count + ".cbn"
         count += 1
         val codegen = new Codegen
-        codegen.codeV(expr, new Env, 0)
+        codegen.codeV(expr, Env.empty, -1)
         codegen.code += mama.Halt()
         codegen.finalizeCode()
         println("Saved as: " + filename)
         println(codegen.codeOutput)
         writeFile(filename, codegen.codeOutput)
     }
+    
+    def generate(str: String) {
+        val grammar = new spl.PufGrammar()
+        grammar.parseString(str)
+        checkErrors(grammar.errors)
+        generate(Desugar.desugar(grammar.tree))
+    }
+
+    def checkErrors(errors: Collection[SourceMessage]) {
+        if (!errors.isEmpty) {
+            Console.err.println("Messages")
+            errors foreach (Console.err.println)
+            exit(1)
+        }
+   }
 }
