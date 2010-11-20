@@ -42,6 +42,8 @@ case class Mkvec(size: Int) extends Opcode("MKVEC", size)
 case class Mkfunval(label: Label) extends Opcode("MKFUNVAL", label)
 case class Targ(n: Int) extends Opcode("TARG", n)
 case class Return(n: Int) extends Opcode("RETURN", n)
+case class Mark(label: Label) extends Opcode("MARK", label)
+case class ApplyOp extends Opcode("APPLY")
 
 // Arithmetic operators.
 case class Neg extends Opcode("NEG")

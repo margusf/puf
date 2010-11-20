@@ -30,7 +30,8 @@ object TestCodegen extends GeneratorBase(null) {
                 Num(2),
                 Num(3)))
         generate("a = 10; b = a + 1; main = let x = a; y = b; in x + y;")
-        generate("a = 1; b = 2; f x y = b + x + y; main = f;")
+        generate("a = 1; b = 2; f x y = b + x + y; g = f 10; main = g 100;")
+        generate("p x = fn y -> x + y; main = p 1 2;")
     }
 
     var count = 1
@@ -41,7 +42,7 @@ object TestCodegen extends GeneratorBase(null) {
         val filename = "target/tests/test" + count + ".cbn"
         count += 1
         val codegen = new Codegen
-        codegen.codeV(expr, Env.empty, -1)
+        codegen.codeV(expr, Env.empty, 0)
         codegen.code += mama.Halt()
         codegen.finalizeCode()
         println("Saved as: " + filename)
@@ -50,6 +51,7 @@ object TestCodegen extends GeneratorBase(null) {
     }
     
     def generate(str: String) {
+        println("Code: " + str)
         val grammar = new spl.PufGrammar()
         grammar.parseString(str)
         checkErrors(grammar.errors)

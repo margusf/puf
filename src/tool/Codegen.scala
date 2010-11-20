@@ -39,7 +39,7 @@ object Env {
     def functionEnv(globals: List[String], locals: List[String]) = {
         println("functionEnv(" + globals + ", " + locals + ")")
         val globalMap = globals.zip(Range(0, globals.size)).toMap
-        val localMap = locals.zip(Range(0, locals.size)).toMap
+        val localMap = locals.zip(Range(0, locals.size).map(- _)).toMap
         new Env(empty, localMap, globalMap)
     }
 }
@@ -131,6 +131,7 @@ class Codegen {
             case Lambda(params, body) =>
                 val freeVars = FreeVars.get(expr).toList
                 val bodyEnv = Env.functionEnv(freeVars, params.map(_.text))
+                println("Bodyenv: " + bodyEnv)
                 val bodyLbl = Label()
                 val cont = Label()
                 var newSd = sd
@@ -145,6 +146,17 @@ class Codegen {
                 code += Targ(params.size)
                 codeV(body, bodyEnv, 0)
                 code += Return(params.size)
+                code += cont
+            case Apply(fun, params) =>
+                val cont = Label()
+                code += Mark(cont)
+                var newSd = sd + 3
+                for (param <- params) {
+                    codeV(param, env, newSd)
+                    newSd += 1
+                }
+                codeV(fun, env, newSd)
+                code += ApplyOp()
                 code += cont
             case _ => throw new Exception("Unsupported expression: " + expr)
         }
@@ -166,9 +178,10 @@ class Codegen {
             Tuple2[Env, Int] = {
         val (env, sd) = prev
         codeV(decl.right, env, sd)
+        val newSd = sd + 1
         decl.left match {
             case Id(txt) =>
-                (env.extend(Map(txt -> (sd + 1))), sd + 1)
+                (env.extend(Map(txt -> newSd)), newSd)
             case TupleLeft(items) =>
                 // TODO: add support for tuples.
                 throw new Exception("Unsupported: tuple let")
