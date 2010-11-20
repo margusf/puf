@@ -199,7 +199,7 @@ object Codegen {
             BinaryOp.Mod -> Mod(),
             BinaryOp.LessThan -> Le(),
             BinaryOp.LessEqual -> Leq(),
-            BinaryOp.GreaterThan -> Ge(),
+            BinaryOp.GreaterThan -> Gr(),
             BinaryOp.GreaterEqual -> Geq(),
             BinaryOp.And -> And(),
             BinaryOp.Or -> Or(),
