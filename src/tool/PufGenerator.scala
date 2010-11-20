@@ -4,13 +4,11 @@ import ee.cyber.simplicitas.{GeneratorBase, MainBase}
 
 class PufGenerator(destDir: String) 
         extends GeneratorBase(destDir) {
-    def generate(tree: spl.Program) {
-        println("Dump")
-        println(Dump.dumpNode(tree))
-
+    def generate(tree: spl.Program, pufFile: String) {
         val desugared = Desugar.desugar(tree)
-        println("Desugared:")
-        println(desugared)
+        val out = Codegen.generate(desugared)
+        val outFile = super.writeFile(pufFile.replaceAll(".puf", ".cbn"), out)
+        println("Output written to " + outFile)
     }
 }
 
@@ -19,7 +17,7 @@ object PufMain extends MainBase {
         parseOptions(argv)
         for (arg <- sources) {
             val tree = parseFile(arg)
-            new PufGenerator(destDir).generate(tree)        
+            new PufGenerator(destDir).generate(tree, arg)        
         }
     }
     
@@ -29,6 +27,7 @@ object PufMain extends MainBase {
         checkErrors(grammar.errors)
 
         if (grammar.tree.include ne null) {
+            // TODO: search the dir of the original file.
             val included = parseFile(grammar.tree.include.file.text + ".puf")
             grammar.tree.decls = included.decls ++ grammar.tree.decls
         }

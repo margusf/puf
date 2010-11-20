@@ -9,7 +9,7 @@ class Codegen {
     import Codegen._
 
     val code = new ListBuffer[Opcode]
-
+    
     def codeB(expr: Expr, env: Env, sd: Int) {
         expr match {
             case Num(n) =>
@@ -179,6 +179,14 @@ class Codegen {
 }
 
 object Codegen {
+    def generate(expr: Expr) = {
+        val gen = new Codegen()
+        gen.codeV(expr, Env.empty, 0)
+        gen.code += mama.Halt()
+        gen.finalizeCode()
+        gen.codeOutput
+    }
+
     val unaryOps = Map(
             UnaryOp.Not -> Not(),
             UnaryOp.Neg -> Neg())

@@ -35,6 +35,7 @@ object TestCodegen extends GeneratorBase(null) {
         generate("even x = if x == 0 then 1 else odd (x - 1);" +
         		"odd x = if x == 0 then 0 else even (x - 1);" +
         		"main = even 10;")
+		generate("a = 1 > 2; b = 1 < 2; c = 1 <= 2; d = 1 >= 2; main = 10;")
     }
 
     var count = 1
