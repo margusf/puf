@@ -30,6 +30,7 @@ object TestCodegen extends GeneratorBase(null) {
                 Num(2),
                 Num(3)))
         generate("a = 10; b = a + 1; main = let x = a; y = b; in x + y;")
+        generate("a = 1; b = 2; f x y = b + x + y; main = f;")
     }
 
     var count = 1

@@ -5,21 +5,42 @@ import mama._
 
 import collection.mutable.ListBuffer
 
-class Env(val parent: Env, mapping: Map[String, Int]) {
-    def apply(id: String): Int =
-        if (mapping.contains(id))
-            mapping(id)
+object VarType extends Enumeration {
+    type Type = Value
+
+    val Local, Global = Value
+}
+
+class Env(val parent: Env, locals: Map[String, Int],
+        globals: Map[String, Int]) {
+    def apply(id: String): Tuple2[VarType.Type, Int] =
+        if (locals.contains(id))
+            (VarType.Local, locals(id))
+        else if ((globals ne null) && globals.contains(id))
+            (VarType.Global, globals(id))
         else
             parent(id)
 
     def extend(mapping: Map[String, Int]) =
-        new Env(this, mapping)
+        new Env(this, mapping, null)
+
+    override def toString =
+        "Env(" + locals + ", " + globals + ", " + parent + ")"
 }
 
 object Env {
-    val empty = new Env(null, null) {
-        override def apply(id: String): Int =
+    val empty = new Env(null, null, null) {
+        override def apply(id: String) =
             throw new Exception("Unknown identifier: " + id)
+        
+        override def toString = "EMPTY"
+    }
+
+    def functionEnv(globals: List[String], locals: List[String]) = {
+        println("functionEnv(" + globals + ", " + locals + ")")
+        val globalMap = globals.zip(Range(0, globals.size)).toMap
+        val localMap = locals.zip(Range(0, locals.size)).toMap
+        new Env(empty, localMap, globalMap)
     }
 }
 
@@ -84,6 +105,8 @@ class Codegen {
             case Num(_) | Unary(_, _) | Binary(_, _, _) =>
                 codeB(expr, env, sd)
                 code += Mkbasic()
+            case Id(text) =>
+                getVar(text, env, sd)
             // If is very similar to codeB, but we use codeV to
             // generate then and else branches and so avoid
             // unnecessary MKBASIC operation.
@@ -99,15 +122,41 @@ class Codegen {
                 code += lblElse
                 codeV(elseExpr, env, sd)
                 code += lblCont
-            case Id(text) =>
-                val i = env(text)
-                code += Pushloc(sd - i)
             case Let(decls, expr) =>
                 val (newEnv, newSd) = 
                     decls.foldLeft((env, sd))(processDecl)
                 codeV(expr, newEnv, newSd)
                 code += Slide(decls.size)
+            // TODO: letrec
+            case Lambda(params, body) =>
+                val freeVars = FreeVars.get(expr).toList
+                val bodyEnv = Env.functionEnv(freeVars, params.map(_.text))
+                val bodyLbl = Label()
+                val cont = Label()
+                var newSd = sd
+                for (fv <- freeVars) {
+                    getVar(fv, env, newSd)
+                    newSd += 1
+                }
+                code += Mkvec(freeVars.size)
+                code += Mkfunval(bodyLbl)
+                code += Jump(cont)
+                code += bodyLbl
+                code += Targ(params.size)
+                codeV(body, bodyEnv, 0)
+                code += Return(params.size)
+                code += cont
             case _ => throw new Exception("Unsupported expression: " + expr)
+        }
+    }
+
+    def getVar(id: String, env: Env, sd: Int) {
+        val (vType, i) = env(id)
+        vType match {
+            case VarType.Local =>
+                code += Pushloc(sd - i)
+            case VarType.Global =>
+                code += Pushglob(i)
         }
     }
 
