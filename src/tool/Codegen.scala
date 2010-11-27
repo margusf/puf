@@ -108,7 +108,7 @@ class Codegen {
                 val cont = Label()
                 code += Mark(cont)
                 var newSd = sd + 3
-                for (param <- params) {
+                for (param <- params.reverse) {
                     codeV(param, env, newSd)
                     newSd += 1
                 }
