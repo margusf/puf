@@ -7,6 +7,7 @@ import collection.mutable.ListBuffer
 
 class Codegen {
     import Codegen._
+    import LetrecHelper._
 
     val code = new ListBuffer[Opcode]
     
@@ -86,7 +87,7 @@ class Codegen {
                 codeV(expr, newEnv, newSd)
                 code += Slide(mappings.size)
             case Lambda(params, body) =>
-                val freeVars = FreeVars.get(expr).toList
+                val freeVars = FreeVars.get(expr, false).toList
                 val bodyEnv = Env.functionEnv(freeVars, params.map(_.text))
                 println("Bodyenv: " + bodyEnv)
                 val bodyLbl = Label()
@@ -143,19 +144,6 @@ class Codegen {
                 // TODO: add support for tuples.
                 throw new Exception("Unsupported: tuple let")
         }
-    }
-
-    def checkLetrecDecls(decls: List[Decl]) = decls // TODO
-    
-    def letrecMappings(decls: List[Decl], sd: Int) = {
-        val idList = for (d <- decls)
-            yield d.left match {
-                case Id(name) =>
-                    name
-                case TupleLeft(_) =>
-                    throw new Exception("Tuples are not supported in letrec")
-            }
-        idList.zip(Range(sd + 1, sd + idList.size + 1)).toMap
     }
 
     def finalizeCode() {

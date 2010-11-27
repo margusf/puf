@@ -1,0 +1,5 @@
+a = b + c;
+b = c + (fn x -> x + a);
+d x = a + b;
+c = a + 10;
+main = c;
