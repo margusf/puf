@@ -73,7 +73,7 @@ class Codegen {
                 val (newEnv, newSd) =
                     decls.foldLeft((env, sd))(processDecl)
                 codeV(expr, newEnv, newSd)
-                code += Slide(decls.size)
+                code += Slide(decls.map(getDeclSize).sum)
             case Letrec(decls, expr) =>
                 val newDecls = checkLetrecDecls(decls)
                 val mappings = letrecMappings(newDecls, sd)
@@ -166,14 +166,25 @@ class Codegen {
             Tuple2[Env, Int] = {
         val (env, sd) = prev
         codeV(decl.right, env, sd)
-        val newSd = sd + 1
         decl.left match {
             case Id(txt) =>
+                val newSd = sd + 1
                 (env.extend(Map(txt -> newSd)), newSd)
             case TupleLeft(items) =>
-                // TODO: add support for tuples.
-                throw new Exception("Unsupported: tuple let")
+                code += Getvec(items.length)
+                // xi -> sd + i, i = 0, ...
+                val newBindings =
+                    items.map(_.text)
+                            .zip(Range(sd + 1, sd + items.length + 1))
+                            .toMap
+                (env.extend(newBindings), sd + items.length)
         }
+    }
+
+    /** Returns the number of variables defined in this declaration. */
+    def getDeclSize(decl: Decl) = decl.left match {
+        case Id(txt) => 1
+        case TupleLeft(items) => items.length
     }
 
     def finalizeCode() {

@@ -61,9 +61,15 @@ object TestCodegen extends GeneratorBase(null) {
             main = sumDoubles [1, 2, 3, 4, 5];
             """)
         generate("""
-            x = (1,2, 3);
+            x = (1, 2, 3);
             y = (x, x);
-            main = (#0 x, #2 (#1 y));
+            main = let
+                foo = #2 (#1 y);
+                (a, b, bar) = x;
+                in
+                    if foo == bar
+                    then 1
+                    else 0;
             """)
     }
 

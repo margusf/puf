@@ -1,4 +1,3 @@
-* Support for tuples
 * Make nil a single global constant.
 * Tail recursion
 * Reordering stuff in letrec
