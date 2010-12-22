@@ -35,7 +35,7 @@ case class Unary(op: UnaryOp.Type, expr: Expr) extends Expr
 case class Apply(fun: Expr, params: List[Expr]) extends Expr
 case class Select(sel: Num, expr: Expr) extends Expr
 case class TupleLit(parts: List[Expr]) extends Expr
-case class ListLit(parts: List[Expr]) extends Expr
+case class ListNil extends Expr
 
 case class Id(text: String) extends Expr with DeclLeft
 case class Num(num: Int) extends Expr
@@ -61,6 +61,6 @@ object BinaryOp extends Enumeration {
 
 object UnaryOp extends Enumeration {
     type Type = Value
-    
+
     val Neg, Not = Value
 }

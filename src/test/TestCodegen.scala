@@ -36,6 +36,15 @@ object TestCodegen extends GeneratorBase(null) {
         		"odd x = if x == 0 then 0 else even (x - 1);" +
         		"main = even 10;")
 		generate("a = 1 > 2; b = 1 < 2; c = 1 <= 2; d = 1 >= 2; main = 10;")
+        generate("""
+            a = [];
+            b = 44 : a;
+            c = [1, 2, b, 4];
+            len l = case l of
+                [] -> 0;
+                h : t -> 1 + len t;
+            main = len c;
+            """)
     }
 
     var count = 1
@@ -53,7 +62,7 @@ object TestCodegen extends GeneratorBase(null) {
         println(codegen.codeOutput)
         writeFile(filename, codegen.codeOutput)
     }
-    
+
     def generate(str: String) {
         println("Code: " + str)
         val grammar = new spl.PufGrammar()
