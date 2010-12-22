@@ -1,0 +1,4 @@
+* Support for tuples
+* Support for lists
+* Reordering stuff in letrec
+* Reordering code snippets to prevent spaghetti code

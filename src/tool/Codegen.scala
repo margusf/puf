@@ -10,7 +10,7 @@ class Codegen {
     import LetrecHelper._
 
     val code = new ListBuffer[Opcode]
-    
+
     def codeB(expr: Expr, env: Env, sd: Int) {
         expr match {
             case Num(n) =>
@@ -64,7 +64,7 @@ class Codegen {
                 codeV(elseExpr, env, sd)
                 code += lblCont
             case Let(decls, expr) =>
-                val (newEnv, newSd) = 
+                val (newEnv, newSd) =
                     decls.foldLeft((env, sd))(processDecl)
                 codeV(expr, newEnv, newSd)
                 code += Slide(decls.size)
@@ -77,13 +77,13 @@ class Codegen {
                 var rewrite = mappings.size
 
                 code += Alloc(mappings.size)
-                
+
                 for (decl <- decls) {
                     codeV(decl.right, newEnv, newSd)
                     code += Rewrite(rewrite)
                     rewrite -= 1
                 }
-                
+
                 codeV(expr, newEnv, newSd)
                 code += Slide(mappings.size)
             case Lambda(params, body) =>
@@ -132,7 +132,7 @@ class Codegen {
 
     /** Helper function for generating code for declaration items in let
       * expression. */
-    def processDecl(prev: Tuple2[Env, Int], decl: Decl): 
+    def processDecl(prev: Tuple2[Env, Int], decl: Decl):
             Tuple2[Env, Int] = {
         val (env, sd) = prev
         codeV(decl.right, env, sd)
@@ -148,7 +148,7 @@ class Codegen {
 
     def finalizeCode() {
         var labelCounter = 0
-        
+
         def nameProvider = {
             labelCounter += 1
             "L" + labelCounter
@@ -161,7 +161,7 @@ class Codegen {
             }
         }
     }
-    
+
     def codeOutput =
         code.mkString("", "\n", "\n")
 }
