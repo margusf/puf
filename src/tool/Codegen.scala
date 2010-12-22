@@ -136,6 +136,16 @@ class Codegen {
                 codeV(consExpr, newEnv, sd + 2)
                 code += Slide(2)
                 code += cont
+            case TupleLit(items) =>
+                var newSd = sd
+                for (item <- items) {
+                    codeV(item, env, newSd)
+                    newSd += 1
+                }
+                code += Mkvec(items.length)
+            case Select(Num(idx), expr) =>
+                codeV(expr, env, sd)
+                code += Get(idx)
             case _ => throw new Exception("Unsupported expression: " + expr)
         }
     }

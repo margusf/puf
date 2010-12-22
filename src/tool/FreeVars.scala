@@ -15,6 +15,10 @@ object FreeVars {
         case ListNil() => Set.empty
         case Cons(left, right) =>
             get(left, eagerOnly) ++ get(right, eagerOnly)
+        case TupleLit(items) =>
+            items.flatMap(get(_, eagerOnly)).toSet
+        case Select(_, expr) =>
+            get(expr, eagerOnly)
         case Letrec(decls, expr) =>
             getLetVars(decls, expr, eagerOnly)
         case Let(decls, expr) =>

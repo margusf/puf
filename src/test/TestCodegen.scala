@@ -60,6 +60,11 @@ object TestCodegen extends GeneratorBase(null) {
             sumDoubles = compose sum double;
             main = sumDoubles [1, 2, 3, 4, 5];
             """)
+        generate("""
+            x = (1,2, 3);
+            y = (x, x);
+            main = (#0 x, #2 (#1 y));
+            """)
     }
 
     var count = 1
