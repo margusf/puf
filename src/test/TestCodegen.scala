@@ -50,8 +50,15 @@ object TestCodegen extends GeneratorBase(null) {
                 case l of
                     [] -> init;
                     h : t -> f h (foldl f init t);
+            map f l =
+                case l of
+                    [] -> [];
+                    h : t -> (f h) : (map f t);
+            double = map (fn x -> 2 * x);
             sum = foldl (fn x y -> x + y) 0;
-            main = sum [1, 2, 3, 4, 5];
+            compose f g = fn x -> f (g x);
+            sumDoubles = compose sum double;
+            main = sumDoubles [1, 2, 3, 4, 5];
             """)
     }
 
