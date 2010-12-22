@@ -79,9 +79,7 @@ object Desugar {
         if (expr.right eq null)
             desugar(expr.left)
         else
-            ast.Binary(ast.BinaryOp.Cons,
-                    desugar(expr.left),
-                    desugar(expr.right))
+            ast.Cons(desugar(expr.left), desugar(expr.right))
 
     def desugar(expr: spl.PlusExpr): ast.Expr = {
         def des(it: (String, spl.MulExpr)): (String, ast.Expr) =
@@ -147,8 +145,7 @@ object Desugar {
                     Nil
                 else
                     (sl.first :: sl.rest).map(desugar)
-            elements.foldRight[ast.Expr](ast.ListNil())(
-                ast.Binary(ast.BinaryOp.Cons, _, _))
+            elements.foldRight[ast.Expr](ast.ListNil())(ast.Cons(_, _))
 
     }
 

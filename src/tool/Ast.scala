@@ -36,6 +36,7 @@ case class Apply(fun: Expr, params: List[Expr]) extends Expr
 case class Select(sel: Num, expr: Expr) extends Expr
 case class TupleLit(parts: List[Expr]) extends Expr
 case class ListNil extends Expr
+case class Cons(left: Expr, right: Expr) extends Expr
 
 case class Id(text: String) extends Expr with DeclLeft
 case class Num(num: Int) extends Expr
@@ -48,7 +49,6 @@ object BinaryOp extends Enumeration {
     val Times = Value("*")
     val Div = Value("/")
     val Mod = Value("%")
-    val Cons = Value(":")
     val LessThan = Value("<")
     val LessEqual = Value("<=")
     val GreaterThan = Value(">")

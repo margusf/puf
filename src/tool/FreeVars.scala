@@ -12,6 +12,9 @@ object FreeVars {
     def get(expr: Expr, eagerOnly: Boolean): Set[String] = expr match {
         case Num(_) => Set.empty
         case Id(txt) => Set(txt)
+        case ListNil() => Set.empty
+        case Cons(left, right) =>
+            get(left, eagerOnly) ++ get(right, eagerOnly)
         case Letrec(decls, expr) =>
             getLetVars(decls, expr, eagerOnly)
         case Let(decls, expr) =>
@@ -21,14 +24,18 @@ object FreeVars {
             get(expr, eagerOnly) -- paramVars
         case Lambda(_, _) =>
             Set.empty
-        case If(cond, ifExpr, elseExpr) => 
+        case If(cond, ifExpr, elseExpr) =>
             get(cond, eagerOnly) ++
-                    get(ifExpr, eagerOnly) ++ 
+                    get(ifExpr, eagerOnly) ++
                     get(elseExpr, eagerOnly)
-        case Binary(_, left, right) => 
+        case Case(cond, nilExpr, ConsAlt(Id(h), Id(t), consExpr)) =>
+            get(cond, eagerOnly) ++
+                    get(nilExpr, eagerOnly) ++
+                    (get(consExpr, eagerOnly) -- Set(h, t))
+        case Binary(_, left, right) =>
             get(left, eagerOnly) ++ get(right, eagerOnly)
         case Unary(_, expr) => get(expr, eagerOnly)
-        case Apply(fun, params) => 
+        case Apply(fun, params) =>
             get(fun, eagerOnly) ++ params.flatMap(get(_, eagerOnly))
         case _ =>
             throw new Exception("Unsupported expression: " + expr)

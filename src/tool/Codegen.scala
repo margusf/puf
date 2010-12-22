@@ -48,6 +48,12 @@ class Codegen {
                 code += Mkbasic()
             case Id(text) =>
                 getVar(text, env, sd)
+            case ListNil() =>
+                code += NilOp()
+            case Cons(l, r) =>
+                codeV(l, env, sd)
+                codeV(r, env, sd + 1)
+                code += ConsOp()
             // If is very similar to codeB, but we use codeV to
             // generate then and else branches and so avoid
             // unnecessary MKBASIC operation.
@@ -115,6 +121,20 @@ class Codegen {
                 }
                 codeV(fun, env, newSd)
                 code += ApplyOp()
+                code += cont
+            case Case(cond, nilExpr, ConsAlt(h, t, consExpr)) =>
+                val listLbl = Label()
+                val cont = Label()
+                val newEnv = env.extend(
+                    Map(h.text -> (sd + 1), t.text -> (sd + 2)))
+
+                codeV(cond, env, sd)
+                code += Tlist(listLbl)
+                codeV(nilExpr, env, sd)
+                code += Jump(cont)
+                code += listLbl
+                codeV(consExpr, newEnv, sd + 2)
+                code += Slide(2)
                 code += cont
             case _ => throw new Exception("Unsupported expression: " + expr)
         }

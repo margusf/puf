@@ -1,9 +1,9 @@
 package puf.mama
 
 abstract class Opcode(code: String, params: Array[Any]) {
-    def this(code: String) = 
+    def this(code: String) =
         this(code, Array[Any]())
-    def this(code: String, param: Int) = 
+    def this(code: String, param: Int) =
         this(code, Array[Any](param))
     def this(code: String, param: Label) =
         this(code, Array[Any](param))
@@ -46,6 +46,10 @@ case class Targ(n: Int) extends Opcode("TARG", n)
 case class Return(n: Int) extends Opcode("RETURN", n)
 case class Mark(label: Label) extends Opcode("MARK", label)
 case class ApplyOp extends Opcode("APPLY")
+
+case class NilOp extends Opcode("NIL")
+case class ConsOp extends Opcode("CONS")
+case class Tlist(consLbl: Label) extends Opcode("TLIST", consLbl)
 
 // Arithmetic operators.
 case class Neg extends Opcode("NEG")

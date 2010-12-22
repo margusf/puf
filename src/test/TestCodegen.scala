@@ -45,6 +45,14 @@ object TestCodegen extends GeneratorBase(null) {
                 h : t -> 1 + len t;
             main = len c;
             """)
+        generate("""
+            foldl f init l =
+                case l of
+                    [] -> init;
+                    h : t -> f h (foldl f init t);
+            sum = foldl (fn x y -> x + y) 0;
+            main = sum [1, 2, 3, 4, 5];
+            """)
     }
 
     var count = 1
