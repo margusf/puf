@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Simpl">
+    <CLASSES>
+      <root url="file://$MAVEN_REPOSITORY$/simplicitas/simplicitas-tool/1.0.1" />
+      <root url="file://$MAVEN_REPOSITORY$/simplicitas/simplicitas-plugin/1.0.1" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../simpl/sancta/tool" />
+      <root url="file://$PROJECT_DIR$/../simpl/sancta/plugin" />
+    </SOURCES>
+    <jarDirectory url="file://$MAVEN_REPOSITORY$/simplicitas/simplicitas-plugin/1.0.1" recursive="false" />
+    <jarDirectory url="file://$MAVEN_REPOSITORY$/simplicitas/simplicitas-tool/1.0.1" recursive="false" />
+  </library>
+</component>
