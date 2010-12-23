@@ -1,13 +1,18 @@
 package puf
 
 import ast._
+import collection.mutable.ArrayBuffer
 
 object LetrecHelper {
     def checkLetrecDecls(decls: List[Decl]) = {
         val dependencies = getDependencies(decls)
+        // Sort the dependencies topologically.
         val sorted = sortDependencies(dependencies)
-
-        decls
+        println("Sorted ids: " + sorted)
+        // Reorder the declarations so that they match the order
+        // of sorted dependencies.
+        val declMap = decls.map((x: Decl) => (getVar(x), x)).toMap
+        sorted.map(declMap(_))
     }
 
     def letrecMappings(decls: List[Decl], sd: Int) = {
@@ -15,15 +20,56 @@ object LetrecHelper {
         idList.zip(Range(sd + 1, sd + idList.size + 1)).toMap
     }
 
-    def getDependencies(decls: List[Decl]) =
-        decls.map((d: Decl) => (getVar(d), FreeVars.get(d.right, true))).toMap
+    def getDependencies(decls: List[Decl]) = {
+        // Set of all variables in the declarations
+        val declVars = decls.map(getVar).toSet
 
-    def sortDependencies(deps: Map[String, Set[String]]) = {
-        println("dependecies to sort: " + deps)
-        deps
+        def processDecl(d: Decl) = {
+            // All free variables in the RHS of a declaration.
+            val allDeps = FreeVars.get(d.right, true)
+            // We are interested only in dependencies to other variables
+            // in the same let-expression. Assume that the global variables
+            // can manage themselves.
+            val realDeps = allDeps.intersect(declVars)
+            (getVar(d), realDeps)
+        }
+
+        decls.map(processDecl).toMap
     }
 
-    def getVar(decl: Decl) = 
+    def sortDependencies(deps: Map[String, Set[String]]) = {
+        // Contains identifiers in
+        val ret = new ArrayBuffer[String]
+        var remainingDeps = deps
+        println("dependecies to sort: " + deps)
+
+        while (!remainingDeps.isEmpty) {
+            println("Remaining deps: " + remainingDeps)
+            val goodDep = remainingDeps.find(
+                (x) => x._2.isEmpty)
+            goodDep match {
+                case Some((id, _)) =>
+                    ret += id
+                    remainingDeps -= id
+                    // Remove dependency to newly removed variable.
+                    remainingDeps = removeDependency(remainingDeps, id)
+                case None =>
+                    val (bId, bDeps) = remainingDeps.head
+                    val badVars = (bId :: bDeps.toList).mkString(", ")
+                    throw new Exception(
+                        "Unresolvable circular dependency between variables " +
+                        badVars)
+            }
+        }
+
+        ret.toList
+    }
+
+    /** Removes dependency to given identifier. */
+    def removeDependency(deps: Map[String, Set[String]], id: String) =
+        deps.mapValues(_ - id)
+
+    def getVar(decl: Decl) =
         decl.left match {
             case Id(name) =>
                 name

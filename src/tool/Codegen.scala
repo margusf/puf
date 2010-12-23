@@ -84,7 +84,7 @@ class Codegen {
 
                 code += Alloc(mappings.size)
 
-                for (decl <- decls) {
+                for (decl <- newDecls) {
                     codeV(decl.right, newEnv, newSd)
                     code += Rewrite(rewrite)
                     rewrite -= 1

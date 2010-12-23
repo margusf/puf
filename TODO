@@ -1,4 +1,3 @@
 * Make nil a single global constant.
 * Tail recursion
-* Reordering stuff in letrec
 * Reordering code snippets to prevent spaghetti code
