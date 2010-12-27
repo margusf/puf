@@ -48,6 +48,8 @@ case class Targ(n: Int) extends Opcode("TARG", n)
 case class Return(n: Int) extends Opcode("RETURN", n)
 case class Mark(label: Label) extends Opcode("MARK", label)
 case class ApplyOp extends Opcode("APPLY")
+case class Move(offset: Int, count: Int)
+        extends Opcode("MOVE", Array[Any](offset, count))
 
 case class NilOp extends Opcode("NIL")
 case class ConsOp extends Opcode("CONS")

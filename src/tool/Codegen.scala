@@ -111,7 +111,8 @@ class Codegen {
                 codeV(body, bodyEnv, 0)
                 code += Return(params.size)
                 code += cont
-            case Apply(fun, params) =>
+            // Normal function application
+            case Apply(fun, params) if !expr.asInstanceOf[Apply].isTailCall =>
                 val cont = Label()
                 code += Mark(cont)
                 var newSd = sd + 3
@@ -122,6 +123,17 @@ class Codegen {
                 codeV(fun, env, newSd)
                 code += ApplyOp()
                 code += cont
+            // Function application in tail call position.
+            case Apply(fun, params) =>
+                var newSd = sd
+                var outerParamCount = expr.asInstanceOf[Apply].outerParamCount
+                for (param <- params.reverse) {
+                    codeV(param, env, newSd)
+                    newSd += 1
+                }
+                codeV(fun, env, newSd)
+                code += Move(sd + outerParamCount, params.length + 1)
+                code += ApplyOp()
             case Case(cond, nilExpr, ConsAlt(h, t, consExpr)) =>
                 val listLbl = Label()
                 val cont = Label()

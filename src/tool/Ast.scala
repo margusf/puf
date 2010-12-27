@@ -35,6 +35,10 @@ case class Unary(op: UnaryOp.Type, expr: Expr) extends Expr
 case class Apply(fun: Expr, params: List[Expr]) extends Expr {
     var tailPosition: Option[Int] = None
     def isTailCall = tailPosition != None
+    def outerParamCount = {
+        val Some(x) = tailPosition
+        x
+    }
 
     override def toString =
         (tailPosition match {

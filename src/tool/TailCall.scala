@@ -8,7 +8,6 @@ object TailCall {
     }
 
     def markCalls(expr: Expr, tailPosition: Option[Int]) {
-        println("markCalls(" + tailPosition + ", " + expr + ")")
         expr match {
             case Apply(f, params) =>
                 expr.asInstanceOf[Apply].tailPosition = tailPosition
