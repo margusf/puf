@@ -93,6 +93,8 @@ object TestCodegen extends GeneratorBase(null) {
             a = 10;
             b = 20;
             """)
+
+        // Circular references between fields in letrec
         try {
             generate("""
                 a = 10;
@@ -108,11 +110,35 @@ object TestCodegen extends GeneratorBase(null) {
             case e: Exception =>
                 println("Caught expected error: " + e.getMessage)
         }
+
+        // Tail calls
+        generate("""
+            mapRec f l =
+                case l of
+                    [] -> [];
+                    h : t -> f h : mapRec f t;
+            mapIter f l =
+                letrec
+                    loop acc f l =
+                        case l of
+                            [] -> acc;
+                            h : t -> loop (f h : acc) f t;
+                in
+                    loop [] f l;
+            infinite x = infinite x;
+            double x = x * 2;
+            lst = [1, 2, 3, 4];
+            main = (
+                mapRec double lst,
+                mapIter double lst);
+            """)
     }
 
     var count = 1
 
     def generate(expr: Expr) {
+        TailCall.markCalls(expr)
+
         println("Code for: " + expr)
 
         val filename = "target/tests/test" + count + ".cbn"

@@ -32,7 +32,16 @@ case class Lambda(params: List[Id], expr: Expr) extends Expr
 case class If(cond: Expr, ifExpr: Expr, elseExpr: Expr) extends Expr
 case class Binary(op: BinaryOp.Type, left: Expr, right: Expr) extends Expr
 case class Unary(op: UnaryOp.Type, expr: Expr) extends Expr
-case class Apply(fun: Expr, params: List[Expr]) extends Expr
+case class Apply(fun: Expr, params: List[Expr]) extends Expr {
+    var tailPosition: Option[Int] = None
+    def isTailCall = tailPosition != None
+
+    override def toString =
+        (tailPosition match {
+            case Some(k) => "TailApply[" + k + "]("
+            case None => "Apply("
+        }) + fun + ", " + params + ")"
+}
 case class Select(sel: Num, expr: Expr) extends Expr
 case class TupleLit(parts: List[Expr]) extends Expr
 case class ListNil extends Expr

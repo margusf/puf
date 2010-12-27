@@ -2,10 +2,11 @@ package puf
 
 import ee.cyber.simplicitas.{GeneratorBase, MainBase}
 
-class PufGenerator(destDir: String) 
+class PufGenerator(destDir: String)
         extends GeneratorBase(destDir) {
     def generate(tree: spl.Program, pufFile: String) {
         val desugared = Desugar.desugar(tree)
+        TailCall.markCalls(desugared)
         val out = Codegen.generate(desugared)
         val outFile = super.writeFile(pufFile.replaceAll(".puf", ".cbn"), out)
         println("Output written to " + outFile)
@@ -17,10 +18,10 @@ object PufMain extends MainBase {
         parseOptions(argv)
         for (arg <- sources) {
             val tree = parseFile(arg)
-            new PufGenerator(destDir).generate(tree, arg)        
+            new PufGenerator(destDir).generate(tree, arg)
         }
     }
-    
+
     def parseFile(file: String): spl.Program = {
         val grammar = new spl.PufGrammar()
         grammar.parseFile(file)
