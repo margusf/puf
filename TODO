@@ -1,3 +1,2 @@
 * Make nil a single global constant.
-* Tail recursion
 * Reordering code snippets to prevent spaghetti code
