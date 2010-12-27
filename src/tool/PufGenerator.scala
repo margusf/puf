@@ -6,7 +6,6 @@ class PufGenerator(destDir: String)
         extends GeneratorBase(destDir) {
     def generate(tree: spl.Program, pufFile: String) {
         val desugared = Desugar.desugar(tree)
-        TailCall.markCalls(desugared)
         val out = Codegen.generate(desugared)
         val outFile = super.writeFile(pufFile.replaceAll(".puf", ".cbn"), out)
         println("Output written to " + outFile)

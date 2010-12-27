@@ -137,19 +137,16 @@ object TestCodegen extends GeneratorBase(null) {
     var count = 1
 
     def generate(expr: Expr) {
-        TailCall.markCalls(expr)
-
-        println("Code for: " + expr)
-
         val filename = "target/tests/test" + count + ".cbn"
         count += 1
-        val codegen = new Codegen
-        codegen.codeV(expr, Env.empty, 0)
-        codegen.code += mama.Halt()
-        codegen.finalizeCode()
+
+        val code = Codegen.generate(expr)
+
+        println("AST: " + expr)
+
         println("Saved as: " + filename)
-        println(codegen.codeOutput)
-        writeFile(filename, codegen.codeOutput)
+        println(code)
+        writeFile(filename, code)
     }
 
     def generate(str: String) {

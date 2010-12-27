@@ -221,6 +221,10 @@ class Codegen {
 
 object Codegen {
     def generate(expr: Expr) = {
+        // Mark all the function applications that can be used as tail
+        // calls.
+        TailCall.markCalls(expr)
+
         val gen = new Codegen()
         gen.codeV(expr, Env.empty, 0)
         gen.code += mama.Halt()
