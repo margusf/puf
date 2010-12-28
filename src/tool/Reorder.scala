@@ -20,9 +20,7 @@ private class Reorder(input: Iterable[Opcode]) {
 
     def separate() {
         makeBlocks(input.toList, null,
-                (block: Block) =>
-                    {println("toplevel: " + block)
-                    topLevel = block})
+                (block: Block) => topLevel = block)
     }
 
     def reassembledCode =
@@ -30,7 +28,6 @@ private class Reorder(input: Iterable[Opcode]) {
 
     def makeBlocks(code: List[Opcode], endLabel: Label,
                    storeFun: (Block) => Unit): List[Opcode] = {
-        println("makeBlocks(" + endLabel + ")")
         val block = new Block
 
         def loop(lst: List[Opcode]): List[Opcode] = lst match {
