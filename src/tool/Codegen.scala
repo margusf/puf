@@ -33,7 +33,6 @@ class Codegen {
                 code += Jump(lblCont)
                 code += lblElse
                 codeB(elseExpr, env, sd)
-                code += Jump(lblCont)
                 code += lblCont
             case _ =>
                 codeV(expr, env, sd)
@@ -69,7 +68,6 @@ class Codegen {
                 code += Jump(lblCont)
                 code += lblElse
                 codeV(elseExpr, env, sd)
-                code += Jump(lblCont)
                 code += lblCont
             case Let(decls, expr) =>
                 val (newEnv, newSd) =
@@ -149,7 +147,6 @@ class Codegen {
                 code += listLbl
                 codeV(consExpr, newEnv, sd + 2)
                 code += Slide(2)
-                code += Jump(cont)
                 code += cont
             case TupleLit(items) =>
                 var newSd = sd
