@@ -29,8 +29,12 @@ case class Label extends Opcode("LABEL") {
     override def toString = name + ":"
 }
 
-case class Jump(label: Label) extends Opcode("JUMP", label)
-case class Jumpz(label: Label) extends Opcode("JUMPZ", label)
+trait WithLabel {
+    def label: Label
+}
+
+case class Jump(label: Label) extends Opcode("JUMP", label) with WithLabel
+case class Jumpz(label: Label) extends Opcode("JUMPZ", label) with WithLabel
 case class Halt extends Opcode("HALT")
 case class Loadc(loc: Int) extends Opcode("LOADC", loc)
 case class Pushloc(loc: Int) extends Opcode("PUSHLOC", loc)
@@ -43,17 +47,19 @@ case class Mkbasic extends Opcode("MKBASIC")
 case class Mkvec(size: Int) extends Opcode("MKVEC", size)
 case class Get(idx: Int) extends Opcode("GET", idx)
 case class Getvec(count: Int) extends Opcode("GETVEC", count)
-case class Mkfunval(label: Label) extends Opcode("MKFUNVAL", label)
+case class Mkfunval(label: Label)
+        extends Opcode("MKFUNVAL", label) with WithLabel
 case class Targ(n: Int) extends Opcode("TARG", n)
 case class Return(n: Int) extends Opcode("RETURN", n)
-case class Mark(label: Label) extends Opcode("MARK", label)
+case class Mark(label: Label) extends Opcode("MARK", label) with WithLabel
 case class ApplyOp extends Opcode("APPLY")
 case class Move(offset: Int, count: Int)
         extends Opcode("MOVE", Array[Any](offset, count))
 
 case class NilOp extends Opcode("NIL")
 case class ConsOp extends Opcode("CONS")
-case class Tlist(consLbl: Label) extends Opcode("TLIST", consLbl)
+case class Tlist(label: Label)
+        extends Opcode("TLIST", label) with WithLabel
 
 // Arithmetic operators.
 case class Neg extends Opcode("NEG")
