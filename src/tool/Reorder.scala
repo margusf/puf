@@ -3,7 +3,6 @@ package puf
 import mama._
 
 import collection.mutable.ArrayBuffer
-import java.util.IdentityHashMap
 
 object Reorder {
     def reorder(code: Iterable[Opcode]): Iterable[Opcode] = {
@@ -11,7 +10,7 @@ object Reorder {
         obj.makeBlocks()
 //        println("block count: " + obj.blocks.values.size)
         println("Blocks:\n" + obj.blocks.values + "\n\n")
-        obj.reorder()
+        obj.mergeBlocks()
         obj.makeCode()
     }
 }
@@ -19,13 +18,7 @@ object Reorder {
 private class Block(label: Label,
                     body: Iterable[Opcode],
                     end: Opcode) {
-    val refs = addRef(end, body.foldRight(Set.empty[Label])(addRef))
-
-    private def addRef(op: Opcode, refs: Set[Label]) =
-        if (op.isInstanceOf[WithLabel])
-            refs + op.asInstanceOf[WithLabel].label
-        else
-            refs
+    def name = label.name
 
     override def toString =
         "\n" + label + "\n" +
@@ -33,8 +26,12 @@ private class Block(label: Label,
 }
 
 private class Reorder(code: Iterable[Opcode]) {
-    val blocks = new IdentityHashMap[Label, Block]
+    val blocks = collection.mutable.Map[String, Block]()
+    val refs =
+        new collection.mutable.HashMap[String, collection.mutable.Set[String]]
+        with collection.mutable.MultiMap[String, String]
     val mainLabel = new Label
+    mainLabel.name = "TOPLEVEL"
 
     def makeBlocks() {
         var label = mainLabel
@@ -68,10 +65,28 @@ private class Reorder(code: Iterable[Opcode]) {
                 "Block does not end with terminating opcode, but " + end)
         }
         body.remove(body.length - 1)
-        blocks.put(label, new Block(label, body, end))
+        blocks(label.name) = new Block(label, body, end)
+
+        addRefs(label.name, end :: body.toList)
     }
 
-    def reorder() {
+    private def addRefs(name: String, ops: Iterable[Opcode]) {
+        for (op <- ops) {
+            if (op.isInstanceOf[WithLabel]) {
+                val label = ops.asInstanceOf[WithLabel].label
+                refs.addBinding(label.name, name)
+            }
+        }
+    }
+
+    def mergeBlocks() {
+        for (block <- blocks.values.toSet[Block]) {
+            val blockRefs = refs.getOrElse(block.name,
+                collection.mutable.Set.empty)
+            // Is there only one reference to this block?
+            if (blockRefs.length == 1) {
+            }
+        }
     }
 
     def makeCode(): Iterable[Opcode] =
