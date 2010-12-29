@@ -82,7 +82,6 @@ class Codegen {
                 val newDecls = checkLetrecDecls(decls)
                 val mappings = letrecMappings(newDecls, sd)
                 val newEnv = env.extend(mappings)
-                println("letrec, newenv = " + newEnv)
                 val newSd = sd + mappings.size
                 var rewrite = mappings.size
 
@@ -99,7 +98,6 @@ class Codegen {
             case Lambda(params, body) =>
                 val freeVars = FreeVars.get(expr, false).toList
                 val bodyEnv = Env.functionEnv(freeVars, params.map(_.text))
-                println("Bodyenv: " + bodyEnv)
                 val bodyLbl = Label()
                 val cont = Label()
                 var newSd = sd

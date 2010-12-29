@@ -8,7 +8,6 @@ object LetrecHelper {
         val dependencies = getDependencies(decls)
         // Sort the dependencies topologically.
         val sorted = sortDependencies(dependencies)
-        println("Sorted ids: " + sorted)
         // Reorder the declarations so that they match the order
         // of sorted dependencies.
         val declMap = decls.map((x: Decl) => (getVar(x), x)).toMap
@@ -41,10 +40,8 @@ object LetrecHelper {
         // Contains identifiers in
         val ret = new ArrayBuffer[String]
         var remainingDeps = deps
-        println("dependecies to sort: " + deps)
 
         while (!remainingDeps.isEmpty) {
-            println("Remaining deps: " + remainingDeps)
             val goodDep = remainingDeps.find(
                 (x) => x._2.isEmpty)
             goodDep match {
