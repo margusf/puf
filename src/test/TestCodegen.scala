@@ -132,6 +132,16 @@ object TestCodegen extends GeneratorBase(null) {
                 mapRec double lst,
                 mapIter double lst);
             """)
+
+        // Constant folding
+        generate("""
+            a = 10;
+            c = a + b;
+            b = 20;
+            d = 1;
+            f a b = (a + b + c) * d;
+            main = f 1 2;
+            """)
     }
 
     var count = 1

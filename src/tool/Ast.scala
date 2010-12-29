@@ -53,6 +53,9 @@ case class Cons(left: Expr, right: Expr) extends Expr
 
 case class Id(text: String) extends Expr with DeclLeft
 case class Num(num: Int) extends Expr
+// This is boolean literal. This AST node only exists during
+// constant propagation phase.
+case class Bool(bool: Boolean) extends Expr
 
 object BinaryOp extends Enumeration {
     type Type = Value

@@ -221,6 +221,10 @@ class Codegen {
 
 object Codegen {
     def generate(expr: Expr) = {
+        println("Before optimization:\n" + expr + "\n")
+        println("After optimization:\n" +
+                ConstPropagation.optimize(expr) + "\n\n")
+
         // Mark all the function applications that can be used as tail
         // calls.
         TailCall.markCalls(expr)
