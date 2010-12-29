@@ -222,6 +222,7 @@ object Codegen {
     def generate(expr: Expr) = {
         println("Before optimization:\n" + expr + "\n")
         val optimized = ConstPropagation.optimize(expr)
+        println("After optimization:\n" + optimized + "\n")
 
         // Mark all the function applications that can be used as tail
         // calls.
@@ -233,7 +234,7 @@ object Codegen {
 
         gen.finalizeCode()
 
-        println("before ordering:\n" + outputCode(gen.code))
+//        println("before ordering:\n" + outputCode(gen.code))
 
         val reordered = Reorder.reorder(gen.code)
         outputCode(reordered)
