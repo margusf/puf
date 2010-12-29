@@ -1,6 +1,7 @@
 package puf
 
 import ee.cyber.simplicitas.{GeneratorBase, MainBase}
+import java.io.File
 
 class PufGenerator(destDir: String)
         extends GeneratorBase(destDir) {
@@ -27,8 +28,9 @@ object PufMain extends MainBase {
         checkErrors(grammar.errors)
 
         if (grammar.tree.include ne null) {
-            // TODO: search the dir of the original file.
-            val included = parseFile(grammar.tree.include.file.text + ".puf")
+            val includePath = new File(file).getParentFile.getAbsolutePath
+            val includeFile = includePath + "/" + grammar.tree.include.file.text
+            val included = parseFile(includeFile + ".puf")
             grammar.tree.decls = included.decls ++ grammar.tree.decls
         }
 

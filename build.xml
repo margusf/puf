@@ -84,7 +84,7 @@
         </java>
     </target>
     
-	<target name="jarball">
+	<target name="jarball" depends="tool,tool-test">
 		<jar destfile="${target}/puf-compiler.jar" basedir="${target}/classes">
             <fileset dir="${basedir}/src/tool"/>
 
