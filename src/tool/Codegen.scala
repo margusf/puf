@@ -1,14 +1,66 @@
 package puf
 
+// Generates code from the AST.
+// The entry point is Codegen.generate
+
 import ast._
 import mama._
 
 import collection.mutable.ListBuffer
 
+object Codegen {
+    /** Generate code for expression. */
+    def generate(expr: Expr) = {
+        println("Before optimization:\n" + expr + "\n")
+        val optimized = ConstPropagation.optimize(expr)
+        println("After optimization:\n" + optimized + "\n")
+
+        // Mark all the function applications that can be used as tail
+        // calls.
+        TailCall.markCalls(optimized)
+
+        val gen = new Codegen()
+        gen.codeV(optimized, Env.empty, 0)
+        gen.code += mama.Halt()
+
+        gen.finalizeCode()
+
+//        println("before ordering:\n" + outputCode(gen.code))
+
+        val reordered = Reorder.reorder(gen.code)
+        outputCode(reordered)
+    }
+
+    private def outputCode(code: Iterable[Opcode]) =
+        code.mkString("", "\n", "\n")
+
+    // What opcodes correspond to what operators
+
+    val unaryOps = Map(
+            UnaryOp.Not -> Not(),
+            UnaryOp.Neg -> Neg())
+
+    val binaryOps = Map(
+            BinaryOp.Plus -> Add(),
+            BinaryOp.Minus -> Sub(),
+            BinaryOp.Times -> Mul(),
+            BinaryOp.Div -> Div(),
+            BinaryOp.Mod -> Mod(),
+            BinaryOp.LessThan -> Le(),
+            BinaryOp.LessEqual -> Leq(),
+            BinaryOp.GreaterThan -> Gr(),
+            BinaryOp.GreaterEqual -> Geq(),
+            BinaryOp.And -> And(),
+            BinaryOp.Or -> Or(),
+            BinaryOp.Equals -> Eq(),
+            BinaryOp.NotEquals -> Neq())
+}
+
 class Codegen {
     import Codegen._
     import LetrecHelper._
 
+    /** The generated code will live here. */
     val code = new ListBuffer[Opcode]
 
     def codeB(expr: Expr, env: Env, sd: Int) {
@@ -96,6 +148,7 @@ class Codegen {
                 codeV(expr, newEnv, newSd)
                 code += Slide(mappings.size)
             case Lambda(params, body) =>
+                // Variables captured from outer environment.
                 val freeVars = FreeVars.get(expr, false).toList
                 val bodyEnv = Env.functionEnv(freeVars, params.map(_.text))
                 val bodyLbl = Label()
@@ -125,7 +178,7 @@ class Codegen {
                 codeV(fun, env, newSd)
                 code += ApplyOp()
                 code += cont
-            // Function application in tail call position.
+            // Function application in tail position.
             case Apply(fun, params) =>
                 var newSd = sd
                 var outerParamCount = expr.asInstanceOf[Apply].outerParamCount
@@ -164,6 +217,7 @@ class Codegen {
         }
     }
 
+    /** Generates code for reading value of the variable. */
     def getVar(id: String, env: Env, sd: Int) {
         val (vType, i) = env(id)
         vType match {
@@ -201,6 +255,7 @@ class Codegen {
         case TupleLeft(items) => items.length
     }
 
+    /** Assigns string values to labels. */
     def finalizeCode() {
         var labelCounter = 0
 
@@ -216,49 +271,4 @@ class Codegen {
             }
         }
     }
-}
-
-object Codegen {
-    def generate(expr: Expr) = {
-        println("Before optimization:\n" + expr + "\n")
-        val optimized = ConstPropagation.optimize(expr)
-        println("After optimization:\n" + optimized + "\n")
-
-        // Mark all the function applications that can be used as tail
-        // calls.
-        TailCall.markCalls(optimized)
-
-        val gen = new Codegen()
-        gen.codeV(optimized, Env.empty, 0)
-        gen.code += mama.Halt()
-
-        gen.finalizeCode()
-
-//        println("before ordering:\n" + outputCode(gen.code))
-
-        val reordered = Reorder.reorder(gen.code)
-        outputCode(reordered)
-    }
-
-    private def outputCode(code: Iterable[Opcode]) =
-        code.mkString("", "\n", "\n")
-
-    val unaryOps = Map(
-            UnaryOp.Not -> Not(),
-            UnaryOp.Neg -> Neg())
-
-    val binaryOps = Map(
-            BinaryOp.Plus -> Add(),
-            BinaryOp.Minus -> Sub(),
-            BinaryOp.Times -> Mul(),
-            BinaryOp.Div -> Div(),
-            BinaryOp.Mod -> Mod(),
-            BinaryOp.LessThan -> Le(),
-            BinaryOp.LessEqual -> Leq(),
-            BinaryOp.GreaterThan -> Gr(),
-            BinaryOp.GreaterEqual -> Geq(),
-            BinaryOp.And -> And(),
-            BinaryOp.Or -> Or(),
-            BinaryOp.Equals -> Eq(),
-            BinaryOp.NotEquals -> Neq())
 }

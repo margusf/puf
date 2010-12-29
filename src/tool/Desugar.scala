@@ -1,6 +1,12 @@
 package puf
 
+// Converts from inconvenient Simpl-produced AST to more pretty AST.
+// Also performs some desugaring operations, such as replacing
+// let f x = ... with let f = fn x -> ... and replacing list literals
+// with cons-es.
+
 object Desugar {
+    /** Main entry point. */
     def desugar(prog: spl.Program): ast.Expr =
         ast.Letrec(
                 prog.decls.map(desugar),

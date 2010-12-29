@@ -1,5 +1,7 @@
 package puf
 
+// Helper for finding all the free variables in expressions.
+
 import ast._
 
 /** Finds all the free variables in an expression. */

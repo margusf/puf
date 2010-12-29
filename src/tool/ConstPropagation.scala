@@ -1,10 +1,23 @@
 package puf
 
+// Performs constant propagation optimization.
+// It tries to compute all the operations using constants. For example,
+// let a = 10; b = 20; c = a + b in x + c   Translates simply to x + 30.
+// If value of the if condition is known, the if is replaced with the correct
+// branch.
+
+
 import ast._
 
 object ConstPropagation {
     type Val = Option[Int]
 
+    /** The environment contains mappings from variables to values.
+      * If the value of variable cannot be statically determined,
+      * None is used.
+      * Unknown values are still put to the environment because they might
+      * shadow some known variables. :)
+      */
     class Env(contents: Map[String, Val]) {
         def apply(varName: String) =
             contents.get(varName) match {
@@ -24,10 +37,13 @@ object ConstPropagation {
         val empty = new Env(Map.empty)
     }
 
+    /** Entry point of the optimizer. Takes as input an expression and
+      * returns optimized expression. */
     def optimize(expr: Expr): Expr =
         optimize(expr, Env.empty)
 
-    def optimize(expr: Expr, env: Env): Expr = expr match {
+    /** Main optimization function, simple match based on expression type. */
+    private def optimize(expr: Expr, env: Env): Expr = expr match {
         case Unary(op, arg) =>
             val optArg = optimize(arg, env)
             (op, optArg) match {
@@ -59,6 +75,12 @@ object ConstPropagation {
         case Let(decls, expr) =>
             optimizeLet(decls, expr, env)
         case Letrec(decls, expr) =>
+            // Letrec is not fully optimized like let because of various
+            // (possibly circular) dependencies. We just optimize the body
+            // expression using known values from outside the letrec.
+
+            // Letrec variables are bound to unknown values and they shadow
+            // vars from outer scope.
             val bindings = decls.map(
                 (d: Decl) => d.left match {
                     case Id(id) => (id, None)
@@ -94,21 +116,29 @@ object ConstPropagation {
     private def optimizeLet(decls: List[Decl], expr: Expr, env: Env): Expr = {
         def loop(todo: List[Decl], done: List[Decl], newEnv: Env): Expr =
             todo match {
+                // End of declarations. Optimize body and quit.
                 case Nil =>
                     val optExpr = optimize(expr, newEnv)
                     optExpr match {
                         case Num(x) => Num(x)
                         case x => Let(done, x)
                     }
+                // Simple declaration. Evaluate the RHS and add new binding.
                 case Decl(Id(id), right) :: rest =>
                     val optRight = optimize(right, newEnv)
                     optRight match {
+                        // If the RHS was known value, we will not add
+                        // new declaration. We just replace all the occurrences
+                        // of this variable with the value.
                         case Num(x) =>
                             loop(rest, done, newEnv.extend(id, Some(x)))
+                        // Unknown RHS, we will have to generate
+                        // variable binding
                         case _ =>
                             loop(rest, done ++ List(Decl(Id(id), optRight)),
                                     newEnv.extend(id, None))
                     }
+                // Tuple deconstruction. Nothing to be done here.
                 case Decl(TupleLeft(ids), right) :: rest =>
                     val optRight = optimize(right, newEnv)
                     val bindings = ids.map(
@@ -121,6 +151,8 @@ object ConstPropagation {
         loop(decls, Nil, env)
     }
 
+    /** Processes binary expression, evaluating also common patterns like x + 0
+      * and x * 1. */
     private def optimizeBinary(op: BinaryOp.Type,
                                arg1: Expr, arg2: Expr, env: Env): Expr = {
         val optArg1 = optimize(arg1, env)
@@ -131,6 +163,8 @@ object ConstPropagation {
                 arithmOps(op)(x1, x2)
             case (Bool(b1), Bool(b2)) if !arithmeticOp(op) =>
                 Bool(booleanOps(op)(b1, b2))
+
+            // Arithmetic simplifications.
             case (x, Num(0))
                     if ((op eq BinaryOp.Plus) || (op eq BinaryOp.Plus)) =>
                 x
@@ -148,6 +182,8 @@ object ConstPropagation {
             case (Num(0), x)
                     if ((op eq BinaryOp.Times) || (op eq BinaryOp.Div)) =>
                 Num(0)
+
+            // Cannot optimize.
             case _ =>
                 Binary(op, optArg1, optArg2)
         }

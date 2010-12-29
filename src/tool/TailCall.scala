@@ -1,13 +1,19 @@
 package puf
 
+// Annotates the AST and marks all the Apply operations that are in
+// tail position.
+
 import ast._
 
 object TailCall {
+    /** Entry point. */
     def markCalls(expr: Expr) {
         markCalls(expr, None)
     }
 
-    def markCalls(expr: Expr, tailPosition: Option[Int]) {
+    /** Annotates Apply operations in expr. tailPosition determines, whether
+      * the current expr can be considered in tail position or not. */
+    private def markCalls(expr: Expr, tailPosition: Option[Int]) {
         expr match {
             case Apply(f, params) =>
                 expr.asInstanceOf[Apply].tailPosition = tailPosition

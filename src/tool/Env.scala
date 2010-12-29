@@ -1,5 +1,8 @@
 package puf
 
+// Environment for code generation.
+
+/** Type of variable: local or global. */
 object VarType extends Enumeration {
     type Type = Value
 
@@ -8,6 +11,7 @@ object VarType extends Enumeration {
 
 class Env(val parent: Env, locals: Map[String, Int],
         globals: Map[String, Int]) {
+    /** Return binding of the variable. */
     def apply(id: String): Tuple2[VarType.Type, Int] =
         if (locals.contains(id))
             (VarType.Local, locals(id))
@@ -16,6 +20,7 @@ class Env(val parent: Env, locals: Map[String, Int],
         else
             parent(id)
 
+    /** Extend the environment with new bindings. */
     def extend(mapping: Map[String, Int]) =
         new Env(this, mapping, null)
 
@@ -31,6 +36,8 @@ object Env {
         override def toString = "EMPTY"
     }
 
+    /**Creates new environment consisting of given set of local and global
+      * variables. */
     def functionEnv(globals: List[String], locals: List[String]) = {
         val globalMap = globals.zip(Range(0, globals.size)).toMap
         val localMap = locals.zip(Range(0, locals.size).map(- _)).toMap

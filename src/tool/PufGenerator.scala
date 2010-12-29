@@ -1,5 +1,7 @@
 package puf
 
+// Main function for the PUF compiler
+
 import ee.cyber.simplicitas.{GeneratorBase, MainBase}
 import java.io.File
 
@@ -13,6 +15,7 @@ class PufGenerator(destDir: String)
     }
 }
 
+/** Main entry point of the compiler. */
 object PufMain extends MainBase {
     def main(argv: Array[String]) {
         parseOptions(argv)
@@ -27,6 +30,7 @@ object PufMain extends MainBase {
         grammar.parseFile(file)
         checkErrors(grammar.errors)
 
+        // Process include directives.
         if (grammar.tree.include ne null) {
             val includePath = new File(file).getParentFile.getAbsolutePath
             val includeFile = includePath + "/" + grammar.tree.include.file.text

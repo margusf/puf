@@ -1,5 +1,7 @@
 package puf.mama
 
+// Opcodes for the MAMA virtual machine.
+
 abstract class Opcode(code: String, params: Array[Any]) {
     def this(code: String) =
         this(code, Array[Any]())
@@ -11,7 +13,7 @@ abstract class Opcode(code: String, params: Array[Any]) {
     override def toString =
         code + " " + params.map(doParam).mkString(" ")
 
-    def doParam(p: Any): String = p match {
+    private def doParam(p: Any): String = p match {
         case l: Label => l.name
         case _ => String.valueOf(p)
     }
@@ -20,6 +22,7 @@ abstract class Opcode(code: String, params: Array[Any]) {
 case class Label extends Opcode("LABEL") {
     var name: String = null
 
+    /** This method is used to give a concrete string value to the label. */
     def init(nameProvider: => String) {
         if (name eq null) {
             name = nameProvider
@@ -29,12 +32,8 @@ case class Label extends Opcode("LABEL") {
     override def toString = name + ":"
 }
 
-trait WithLabel {
-    def label: Label
-}
-
-case class Jump(label: Label) extends Opcode("JUMP", label) with WithLabel
-case class Jumpz(label: Label) extends Opcode("JUMPZ", label) with WithLabel
+case class Jump(label: Label) extends Opcode("JUMP", label)
+case class Jumpz(label: Label) extends Opcode("JUMPZ", label)
 case class Halt extends Opcode("HALT")
 case class Loadc(loc: Int) extends Opcode("LOADC", loc)
 case class Pushloc(loc: Int) extends Opcode("PUSHLOC", loc)
@@ -47,19 +46,19 @@ case class Mkbasic extends Opcode("MKBASIC")
 case class Mkvec(size: Int) extends Opcode("MKVEC", size)
 case class Get(idx: Int) extends Opcode("GET", idx)
 case class Getvec(count: Int) extends Opcode("GETVEC", count)
-case class Mkfunval(label: Label)
-        extends Opcode("MKFUNVAL", label) with WithLabel
+case class Mkfunval(label: Label) extends Opcode("MKFUNVAL", label)
 case class Targ(n: Int) extends Opcode("TARG", n)
 case class Return(n: Int) extends Opcode("RETURN", n)
-case class Mark(label: Label) extends Opcode("MARK", label) with WithLabel
+case class Mark(label: Label) extends Opcode("MARK", label)
 case class ApplyOp extends Opcode("APPLY")
 case class Move(offset: Int, count: Int)
         extends Opcode("MOVE", Array[Any](offset, count))
 
+// List operations.
 case class NilOp extends Opcode("NIL")
 case class ConsOp extends Opcode("CONS")
 case class Tlist(label: Label)
-        extends Opcode("TLIST", label) with WithLabel
+        extends Opcode("TLIST", label)
 
 // Arithmetic operators.
 case class Neg extends Opcode("NEG")

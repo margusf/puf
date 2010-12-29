@@ -1,5 +1,8 @@
 package puf
 
+// Test program that compiles various programs.
+// The programs must be run manually.
+
 import ast._
 
 import ee.cyber.simplicitas.{GeneratorBase, SourceMessage}

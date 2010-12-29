@@ -1,5 +1,8 @@
 package puf
 
+// Reorders generated MAMA code so that the function body is one contiguous
+// block.
+
 import mama._
 
 import collection.mutable.ArrayBuffer
@@ -18,6 +21,7 @@ private class Reorder(input: Iterable[Opcode]) {
     val blocks = new ArrayBuffer[Block]
     var topLevel: Block = null
 
+    /** Separates the toplevel code from code blocks. */
     def separate() {
         makeBlocks(input.toList, null,
                 (block: Block) => topLevel = block)
@@ -26,6 +30,8 @@ private class Reorder(input: Iterable[Opcode]) {
     def reassembledCode =
         topLevel ++ blocks.flatten
 
+    /** Go through the code and separate blocks of code that are used
+      * for MKFUNVAL operations. */
     def makeBlocks(code: List[Opcode], endLabel: Label,
                    storeFun: (Block) => Unit): List[Opcode] = {
         val block = new Block
@@ -58,7 +64,7 @@ private class Reorder(input: Iterable[Opcode]) {
         ret
     }
 
-    def storeBlock(block: Block) {
+    private def storeBlock(block: Block) {
         blocks += block
     }
 }

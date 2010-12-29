@@ -1,0 +1,10 @@
+fact =
+	letrec
+		iter acc n =
+			if n == 0 then
+				acc
+			else
+				iter (acc * n) (n - 1);
+	in
+		iter 1;
+main = fact 5;
