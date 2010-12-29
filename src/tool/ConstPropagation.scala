@@ -4,6 +4,7 @@ import ast._
 
 object ConstPropagation {
     type Val = Option[Int]
+
     class Env(contents: Map[String, Val]) {
         def apply(varName: String) =
             contents.get(varName) match {
@@ -26,9 +27,7 @@ object ConstPropagation {
     def optimize(expr: Expr): Expr =
         optimize(expr, Env.empty)
 
-    def optimize(expr: Expr, env: Env): Expr = {
-        println("optimize: " + expr + "\nenv: " + env)
-        val uui = expr match {
+    def optimize(expr: Expr, env: Env): Expr = expr match {
         case Unary(op, arg) =>
             val optArg = optimize(arg, env)
             (op, optArg) match {
@@ -37,33 +36,7 @@ object ConstPropagation {
                 case _ => Unary(op, optArg)
             }
         case  Binary(op, arg1, arg2) =>
-            val optArg1 = optimize(arg1, env)
-            val optArg2 = optimize(arg2, env)
-            (optArg1, optArg2) match {
-                case (Num(x1), Num(x2)) if arithmeticOp(op) =>
-                    arithmOps(op)(x1, x2)
-                case (Bool(b1), Bool(b2)) if !arithmeticOp(op) =>
-                    Bool(booleanOps(op)(b1, b2))
-                case (x, Num(0))
-                        if ((op eq BinaryOp.Plus) || (op eq BinaryOp.Plus)) =>
-                    x
-                case (Num(0), x)
-                        if ((op eq BinaryOp.Plus) || (op eq BinaryOp.Plus)) =>
-                    x
-                case (x, Num(1))
-                        if ((op eq BinaryOp.Times) || (op eq BinaryOp.Div)) =>
-                    x
-                case (Num(1), x)
-                        if ((op eq BinaryOp.Times) || (op eq BinaryOp.Div)) =>
-                    x
-                case (x, Num(0)) if ((op eq BinaryOp.Times)) =>
-                    Num(0)
-                case (Num(0), x)
-                        if ((op eq BinaryOp.Times) || (op eq BinaryOp.Div)) =>
-                    Num(0)
-                case _ =>
-                    Binary(op, optArg1, optArg2)
-            }
+            optimizeBinary(op, arg1, arg2, env)
         case Id(text) =>
             env(text) match {
                 case None => Id(text)
@@ -86,7 +59,17 @@ object ConstPropagation {
         case Let(decls, expr) =>
             optimizeLet(decls, expr, env)
         case Letrec(decls, expr) =>
-            optimizeLetrec(decls, expr, env)
+            val bindings = decls.map(
+                (d: Decl) => d.left match {
+                    case Id(id) => (id, None)
+                })
+            val newEnv = env.extend(bindings)
+
+            Letrec(
+                decls.map(
+                    (d: Decl) =>
+                        Decl(d.left, optimize(d.right, newEnv))),
+                optimize(expr, newEnv))
         case Lambda(params, body) =>
             val bindings = params.map(
                 (id: Id) => (id.text, None))
@@ -106,9 +89,6 @@ object ConstPropagation {
             Select(idx, optimize(expr, env))
         case _ =>
             expr
-    }
-        println("exit: " + uui)
-        uui
     }
 
     private def optimizeLet(decls: List[Decl], expr: Expr, env: Env): Expr = {
@@ -141,56 +121,36 @@ object ConstPropagation {
         loop(decls, Nil, env)
     }
 
-    private def optimizeLetrec(decls: List[Decl], expr: Expr,
-                               env: Env): Expr = {
-        val orderedDecls = LetrecHelper.checkLetrecDecls(decls)
-        val bindings =
-            orderedDecls.map((d: Decl) =>
-                d match {
-                    case Decl(Id(id), Num(n)) => (id, Some(n))
-                    case Decl(Id(id), _) => (id, None)
-                })
+    private def optimizeBinary(op: BinaryOp.Type,
+                               arg1: Expr, arg2: Expr, env: Env): Expr = {
+        val optArg1 = optimize(arg1, env)
+        val optArg2 = optimize(arg2, env)
 
-        var newEnv = env.extend(bindings)
-        var newDecls = orderedDecls
-        var oldLength = newDecls.length
-
-        while (true) {
-            val (nnDecls, nnEnv) = optimizeDecls(newDecls, newEnv)
-
-            newEnv = nnEnv
-            newDecls = nnDecls
-
-            if (oldLength == newDecls.length) {
-                val optExpr = optimize(expr, newEnv)
-                return optExpr match {
-                    case Num(x) => Num(x)
-                    case x => Letrec(newDecls, x)
-                }
-            } else {
-                oldLength = newDecls.length
-            }
+        (optArg1, optArg2) match {
+            case (Num(x1), Num(x2)) if arithmeticOp(op) =>
+                arithmOps(op)(x1, x2)
+            case (Bool(b1), Bool(b2)) if !arithmeticOp(op) =>
+                Bool(booleanOps(op)(b1, b2))
+            case (x, Num(0))
+                    if ((op eq BinaryOp.Plus) || (op eq BinaryOp.Plus)) =>
+                x
+            case (Num(0), x)
+                    if ((op eq BinaryOp.Plus) || (op eq BinaryOp.Plus)) =>
+                x
+            case (x, Num(1))
+                    if ((op eq BinaryOp.Times) || (op eq BinaryOp.Div)) =>
+                x
+            case (Num(1), x)
+                    if ((op eq BinaryOp.Times) || (op eq BinaryOp.Div)) =>
+                x
+            case (x, Num(0)) if ((op eq BinaryOp.Times)) =>
+                Num(0)
+            case (Num(0), x)
+                    if ((op eq BinaryOp.Times) || (op eq BinaryOp.Div)) =>
+                Num(0)
+            case _ =>
+                Binary(op, optArg1, optArg2)
         }
-        // We'll never get here, but we have to please the compiler.
-        null
-    }
-
-    private def optimizeDecls(decls: List[Decl], env: Env) = {
-        println("optimizeDecls(" + decls + ")")
-        var newDecls: List[Decl] = Nil
-        var newEnv = env
-
-        for (d <- decls) {
-            val optRight = optimize(d.right, newEnv)
-            (d.left, optRight) match {
-                case (Id(id), Num(x)) =>
-                    newEnv = env.extend(id, Some(x))
-                case (Id(id), x) =>
-                    newDecls = newDecls ++ List(Decl(Id(id), x))
-            }
-        }
-
-        (newDecls, newEnv)
     }
 
     private def arithmeticOp(op: BinaryOp.Type) = op match {
@@ -228,4 +188,3 @@ object ConstPropagation {
         BinaryOp.NotEquals -> ((x: Int, y: Int) => Bool(x != y))
     )
 }
-

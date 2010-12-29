@@ -11,6 +11,7 @@ object FreeVars {
       */
     def get(expr: Expr, eagerOnly: Boolean): Set[String] = expr match {
         case Num(_) => Set.empty
+        case Bool(_) => Set.empty
         case Id(txt) => Set(txt)
         case ListNil() => Set.empty
         case Cons(left, right) =>

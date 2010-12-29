@@ -1,2 +1,0 @@
-* Make nil a single global constant.
-* Reordering code snippets to prevent spaghetti code

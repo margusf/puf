@@ -15,6 +15,10 @@ class Codegen {
         expr match {
             case Num(n) =>
                 code += Loadc(n)
+            case Bool(true) =>
+                code += Loadc(1)
+            case Bool(false) =>
+                code += Loadc(0)
             case Unary(op, e) =>
                 codeB(e, env, sd)
                 code += unaryOps(op)
@@ -43,7 +47,7 @@ class Codegen {
     def codeV(expr: Expr, env: Env, sd: Int) {
         expr match {
             // Primitives are done with codeB
-            case Num(_) | Unary(_, _) | Binary(_, _, _) =>
+            case Num(_) | Bool(_) | Unary(_, _) | Binary(_, _, _) =>
                 codeB(expr, env, sd)
                 code += Mkbasic()
             case Id(text) =>
@@ -214,33 +218,31 @@ class Codegen {
             }
         }
     }
-
-    def codeOutput =
-        code.mkString("", "\n", "\n")
 }
 
 object Codegen {
     def generate(expr: Expr) = {
         println("Before optimization:\n" + expr + "\n")
-        println("After optimization:\n" +
-                ConstPropagation.optimize(expr) + "\n\n")
+        val optimized = ConstPropagation.optimize(expr)
 
         // Mark all the function applications that can be used as tail
         // calls.
-        TailCall.markCalls(expr)
+        TailCall.markCalls(optimized)
 
         val gen = new Codegen()
-        gen.codeV(expr, Env.empty, 0)
+        gen.codeV(optimized, Env.empty, 0)
         gen.code += mama.Halt()
 
         gen.finalizeCode()
 
-        println("before ordering:\n" + gen.codeOutput)
+        println("before ordering:\n" + outputCode(gen.code))
 
         val reordered = Reorder.reorder(gen.code)
-        reordered.mkString("", "\n", "\n")
-//        gen.codeOutput
+        outputCode(reordered)
     }
+
+    private def outputCode(code: Iterable[Opcode]) =
+        code.mkString("", "\n", "\n")
 
     val unaryOps = Map(
             UnaryOp.Not -> Not(),

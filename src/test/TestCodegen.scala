@@ -135,12 +135,15 @@ object TestCodegen extends GeneratorBase(null) {
 
         // Constant folding
         generate("""
-            a = 10;
-            c = a + b;
-            b = 20;
-            d = 1;
-            f a b = (a + b + c) * d;
-            main = f 1 2;
+            main =
+                let
+                    a = 10;
+                    b = 20;
+                    c = a + b;
+                    d = 1;
+                    f a b = (a + b + c) * d;
+                    main = f 1 2;
+                in main;
             """)
     }
 
